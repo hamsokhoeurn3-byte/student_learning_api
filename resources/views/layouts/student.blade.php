@@ -36,7 +36,7 @@
         }
 
         body {
-            background: #f8f9fc;
+            background: #f7f8ff;
             font-family:
                 Inter,
                 -apple-system,
@@ -117,7 +117,7 @@
 
             border-radius: 10px;
 
-            background: #0d6efd;
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
 
             color: white;
 
@@ -202,7 +202,7 @@
 
             text-decoration: none;
 
-            color: #0d6efd;
+            color: #475467;
 
             font-size: 16px;
 
@@ -229,9 +229,9 @@
 
         .student-nav-link:hover {
 
-            background: #f0f6ff;
+            background: #f1ebff;
 
-            color: #0d6efd;
+            color: #6d28d9;
         }
 
 
@@ -239,7 +239,7 @@
 
         .student-nav-link.active {
 
-            background: #0d6efd;
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
 
             color: #ffffff;
 
@@ -248,7 +248,7 @@
 
         .student-nav-link.active:hover {
 
-            background: #0b5ed7;
+            background: linear-gradient(135deg, #6d28d9, #4c1d95);
 
             color: #ffffff;
         }
@@ -293,7 +293,7 @@
 
             background: #dbeafe;
 
-            color: #0d6efd;
+            color: #6d28d9;
 
             display: flex;
 
@@ -352,7 +352,7 @@
 
             overflow-x: hidden;
 
-            background: #f8f9fc;
+            background: #f7f8ff;
         }
 
 
@@ -631,6 +631,15 @@
 
             </a>
 
+            <a
+                href="{{ route('student.settings') }}"
+                class="student-nav-link
+                {{ request()->routeIs('student.settings') ? 'active' : '' }}"
+            >
+                <i class="bi bi-gear"></i>
+                <span>Settings</span>
+            </a>
+
 
         </nav>
 
@@ -683,8 +692,9 @@
     ====================================================== --}}
 
     <main class="student-content">
-
+        @include('components.student.header')
         @yield('content')
+        @include('components.student.footer')
 
     </main>
 

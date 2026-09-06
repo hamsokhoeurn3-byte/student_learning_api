@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
+Route::view('/', 'pages.auth.login')->name('home');
+
 /*
 |--------------------------------------------------------------------------
 | Authentication
@@ -26,7 +28,7 @@ Route::post('/logout', [AuthController::class, 'logout'])
 */
 
 Route::prefix('student')
-    ->middleware('auth')
+    ->middleware(['auth', 'role:student'])
     ->group(function () {
 
         Route::get('/dashboard', function () {
@@ -99,6 +101,8 @@ Route::prefix('student')
         Route::get('/reports', function () {
             return view('pages.student.reports.index');
         })->name('student.reports');
+
+        Route::view('/settings', 'pages.student.settings.index')->name('student.settings');
     });
 
 
@@ -109,12 +113,22 @@ Route::prefix('student')
 */
 
 Route::prefix('teacher')
-    ->middleware('auth')
+    ->middleware(['auth', 'role:teacher'])
     ->group(function () {
 
         Route::get('/dashboard', function () {
             return view('pages.teacher.dashboard');
         })->name('teacher.dashboard');
+
+        Route::view('/students', 'pages.teacher.students.index')->name('teacher.students');
+        Route::view('/attendance', 'pages.teacher.attendance.index')->name('teacher.attendance');
+        Route::view('/assignments', 'pages.teacher.assignments.index')->name('teacher.assignments');
+        Route::view('/quizzes', 'pages.teacher.quizzes.index')->name('teacher.quizzes');
+        Route::view('/grades', 'pages.teacher.grades.index')->name('teacher.grades');
+        Route::view('/courses', 'pages.teacher.courses.index')->name('teacher.courses');
+        Route::view('/calendar', 'pages.teacher.calendar.index')->name('teacher.calendar');
+        Route::view('/reports', 'pages.teacher.reports.index')->name('teacher.reports');
+        Route::view('/settings', 'pages.teacher.settings.index')->name('teacher.settings');
     });
 
 
@@ -125,10 +139,17 @@ Route::prefix('teacher')
 */
 
 Route::prefix('admin')
-    ->middleware('auth')
+    ->middleware(['auth', 'role:admin'])
     ->group(function () {
 
         Route::get('/dashboard', function () {
             return view('pages.admin.dashboard');
         })->name('admin.dashboard');
+
+        Route::view('/students', 'pages.admin.students.index')->name('admin.students');
+        Route::view('/teachers', 'pages.admin.teachers.index')->name('admin.teachers');
+        Route::view('/courses', 'pages.admin.courses.index')->name('admin.courses');
+        Route::view('/assignments', 'pages.admin.assignments.index')->name('admin.assignments');
+        Route::view('/reports', 'pages.admin.reports.index')->name('admin.reports');
+        Route::view('/settings', 'pages.admin.settings.index')->name('admin.settings');
     });

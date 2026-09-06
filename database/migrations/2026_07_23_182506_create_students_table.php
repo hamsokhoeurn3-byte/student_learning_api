@@ -6,43 +6,72 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('students', function (Blueprint $table) {
 
             $table->id();
 
-            $table->string('student_code')->unique();
+            $table->foreignId('user_id')
+                ->unique()
+                ->constrained('users')
+                ->cascadeOnDelete();
+
+            $table->string('student_id')
+                ->unique();
 
             $table->string('first_name');
 
             $table->string('last_name');
 
-            $table->string('gender');
-
             $table->date('date_of_birth');
 
-            $table->string('phone')->nullable();
+            $table->enum('gender', [
+                'Male',
+                'Female',
+            ]);
 
-            $table->string('email')->unique();
+            $table->string('nationality')
+                ->default('Cambodian');
 
-            $table->string('faculty');
+            $table->string('phone')
+                ->nullable();
 
-            $table->string('department');
+            $table->text('address')
+                ->nullable();
 
-            $table->integer('year_level');
+            $table->string('department')
+                ->nullable();
+
+            $table->string('major')
+                ->nullable();
+
+            $table->string('academic_year')
+                ->nullable();
+
+            $table->string('year_level')
+                ->nullable();
+
+            $table->string('semester')
+                ->nullable();
+
+            $table->string('advisor')
+                ->nullable();
+
+            $table->date('enrollment_date')
+                ->nullable();
+
+            $table->enum('status', [
+                'enrolled',
+                'graduated',
+                'suspended',
+                'inactive',
+            ])->default('enrolled');
 
             $table->timestamps();
-
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('students');

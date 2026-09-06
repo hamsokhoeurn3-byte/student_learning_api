@@ -2,51 +2,178 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
-use App\Models\User;
+use App\Models\Student;
+use App\Models\Teacher;
+use App\Models\Admin;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function register(RegisterRequest $request)
+    /*
+    |--------------------------------------------------------------------------
+    | Show Login Page
+    |--------------------------------------------------------------------------
+    */
+
+    public function showLoginForm()
     {
-        $user = User::create([
-            'student_id' => $request->student_id,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password,
-        ]);
-
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        return response()->json([
-            'message' => 'User registered successfully.',
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-            ]
-        ], 201);
+        return view('pages.auth.login');
     }
 
-    public function login(LoginRequest $request)
-    {
-        $user = User::where('student_id', $request->student_id)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            return response()->json([
-                'message' => 'Invalid student ID or password.'
-            ], 401);
+    /*
+    |--------------------------------------------------------------------------
+    | Login
+    |--------------------------------------------------------------------------
+    */
+
+    public function login(Request $request)
+    {
+        $request->validate([
+            'login_id' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        $loginId = $request->login_id;
+
+        $user = null;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Find Student
+        |--------------------------------------------------------------------------
+        */
+
+        $student = Student::where('student_id', $loginId)
+            ->with('user')
+            ->first();
+
+        if ($student) {
+
+            $user = $student->user;
+
+        } else {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Find Teacher
+            |--------------------------------------------------------------------------
+            */
+
+            $teacher = Teacher::where('teacher_id', $loginId)
+                ->with('user')
+                ->first();
+
+            if ($teacher) {
+
+                $user = $teacher->user;
+
+            } else {
+
+                /*
+                |--------------------------------------------------------------------------
+                | Find Admin
+                |--------------------------------------------------------------------------
+                */
+
+                $admin = Admin::where('admin_id', $loginId)
+                    ->with('user')
+                    ->first();
+
+                if ($admin) {
+                    $user = $admin->user;
+                }
+            }
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Login successful.',
-            'data' => [
-                'user' => $user,
-                'token' => $token,
-            ]
-        ], 200);
+        /*
+        |--------------------------------------------------------------------------
+        | User Not Found
+        |--------------------------------------------------------------------------
+        */
+
+        if (!$user) {
+
+            return back()
+                ->withInput($request->only('login_id'))
+                ->withErrors([
+                    'login_id' => 'Invalid Student / Teacher / Admin ID.',
+                ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check Password
+        |--------------------------------------------------------------------------
+        */
+
+        if (!Hash::check($request->password, $user->password)) {
+
+            return back()
+                ->withInput($request->only('login_id'))
+                ->withErrors([
+                    'login_id' => 'Invalid ID or password.',
+                ]);
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Login
+        |--------------------------------------------------------------------------
+        */
+
+        Auth::login($user);
+
+        $request->session()->regenerate();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Redirect According To Role
+        |--------------------------------------------------------------------------
+        */
+
+        switch ($user->role) {
+
+            case 'student':
+                return redirect()->route('student.dashboard');
+
+            case 'teacher':
+                return redirect()->route('teacher.dashboard');
+
+            case 'admin':
+                return redirect()->route('admin.dashboard');
+
+            default:
+
+                Auth::logout();
+
+                return back()->withErrors([
+                    'login_id' => 'Invalid user role.',
+                ]);
+        }
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Logout
+    |--------------------------------------------------------------------------
+    */
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login');
     }
 }

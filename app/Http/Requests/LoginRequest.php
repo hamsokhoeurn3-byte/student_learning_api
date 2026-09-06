@@ -12,10 +12,10 @@ class LoginRequest extends FormRequest
     }
 
     public function rules(): array
-{
+    {
         return [
             'student_id' => 'required|string|max:50',
-            'password' => 'required|string',
+            'password' => 'required|string|min:6',
         ];
     }
 }

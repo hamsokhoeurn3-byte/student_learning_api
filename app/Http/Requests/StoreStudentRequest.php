@@ -2,38 +2,69 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreStudentRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            'student_code' => 'required|string|max:20|unique:students,student_code',
-            'first_name' => 'required|string|max:50',
-            'last_name' => 'required|string|max:50',
-            'gender' => 'required|in:Male,Female',
-            'date_of_birth' => 'required|date',
-            'phone' => 'nullable|string|max:20',
-            'email' => 'required|email|unique:students,email',
-            'faculty' => 'required|string|max:100',
-            'department' => 'required|string|max:100',
-            'year_level' => 'required|integer|min:1|max:4',
 
+            'student_id' =>
+                'required|string|max:50|unique:students,student_id',
+
+            'first_name' =>
+                'required|string|max:100',
+
+            'last_name' =>
+                'required|string|max:100',
+
+            'gender' =>
+                'required|in:Male,Female',
+
+            'date_of_birth' =>
+                'nullable|date',
+
+            'nationality' =>
+                'nullable|string|max:100',
+
+            'phone' =>
+                'nullable|string|max:30',
+
+            'address' =>
+                'nullable|string|max:255',
+
+            'email' =>
+                'required|email|unique:students,email',
+
+            'department' =>
+                'nullable|string|max:255',
+
+            'major' =>
+                'nullable|string|max:255',
+
+            'academic_year' =>
+                'nullable|string|max:20',
+
+            'year_level' =>
+                'nullable|integer|min:1|max:10',
+
+            'semester' =>
+                'nullable|string|max:50',
+
+            'advisor' =>
+                'nullable|string|max:255',
+
+            'enrollment_date' =>
+                'nullable|date',
+
+            'status' =>
+                'nullable|string|max:50',
         ];
     }
 }

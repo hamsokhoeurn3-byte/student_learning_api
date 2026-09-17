@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
 
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
         @yield('title', 'Dashboard') - SLAS
@@ -15,13 +14,9 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     {{-- Bootstrap Icons --}}
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    >
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
-
         /* =====================================================
            GLOBAL
         ===================================================== */
@@ -112,22 +107,14 @@
 
         .student-logo-icon {
 
-            width: 46px;
-            height: 46px;
+            width: 52px;
+            height: 52px;
 
             border-radius: 10px;
 
-            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            background: #f1ebff;
 
-            color: white;
-
-            display: flex;
-
-            align-items: center;
-
-            justify-content: center;
-
-            font-size: 22px;
+            object-fit: contain;
 
             flex-shrink: 0;
         }
@@ -335,6 +322,25 @@
             margin-top: 2px;
         }
 
+        .student-logout {
+            width: 100%;
+            margin-top: 12px;
+            padding: 9px 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #b42318;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .student-logout:hover {
+            background: #b42318;
+            border-color: #b42318;
+            color: #ffffff;
+        }
+
 
         /* =====================================================
            MAIN CONTENT
@@ -408,7 +414,6 @@
                 padding: 10px 10px;
             }
         }
-
     </style>
 
     @stack('styles')
@@ -418,291 +423,270 @@
 
 <body>
 
-<div class="student-layout">
+    <div class="student-layout">
 
 
-    {{-- =====================================================
+        {{-- =====================================================
          STUDENT SIDEBAR
     ====================================================== --}}
 
-    <aside class="student-sidebar">
+        <aside class="student-sidebar">
 
 
-        {{-- =================================================
+            {{-- =================================================
              LOGO
         ================================================== --}}
 
-        <div class="student-logo">
+            <div class="student-logo">
 
-            <a href="{{ route('student.dashboard') }}">
+                <a href="{{ route('student.dashboard') }}">
 
-                <div class="student-logo-icon">
+                    <img src="{{ asset('slas-logo.png') }}" alt="SLAS - Siem Reap University" class="student-logo-icon">
 
-                    <i class="bi bi-mortarboard-fill"></i>
+                    <div>
 
-                </div>
+                        <div class="student-logo-title">
+                            SLAS
+                        </div>
 
-                <div>
-
-                    <div class="student-logo-title">
-                        SLAS
-                    </div>
-
-                    <div class="student-logo-subtitle">
-                        Student Portal
-                    </div>
-
-                </div>
-
-            </a>
-
-        </div>
-
-
-
-        {{-- =================================================
-             NAVIGATION
-        ================================================== --}}
-
-        <nav class="student-nav">
-
-
-            {{-- Dashboard --}}
-
-            <a
-                href="{{ route('student.dashboard') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.dashboard') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-grid-1x2-fill"></i>
-
-                <span>Dashboard</span>
-
-            </a>
-
-
-            {{-- Profile --}}
-
-            <a
-                href="{{ route('student.profile') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.profile') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-person-circle"></i>
-
-                <span>Profile</span>
-
-            </a>
-
-
-            {{-- Attendance --}}
-
-            <a
-                href="{{ route('student.attendance') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.attendance') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-calendar-check"></i>
-
-                <span>Attendance</span>
-
-            </a>
-
-
-            {{-- Assignments --}}
-
-            <a
-                href="{{ route('student.assignments') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.assignments') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-journal-text"></i>
-
-                <span>Assignments</span>
-
-            </a>
-
-
-            {{-- Quizzes --}}
-
-            <a
-                href="{{ route('student.quizzes') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.quizzes') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-patch-question"></i>
-
-                <span>Quizzes</span>
-
-            </a>
-
-
-            {{-- Grades --}}
-
-            <a
-                href="{{ route('student.grades') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.grades') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-bar-chart-line"></i>
-
-                <span>Grades</span>
-
-            </a>
-
-
-            {{-- Analytics --}}
-
-            <a
-                href="{{ route('student.analytics') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.analytics') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-graph-up-arrow"></i>
-
-                <span>Analytics</span>
-
-            </a>
-
-
-            {{-- Courses --}}
-
-            <a
-                href="{{ route('student.courses') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.courses') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-book"></i>
-
-                <span>Courses</span>
-
-            </a>
-
-
-            {{-- Calendar --}}
-
-            <a
-                href="{{ route('student.calendar') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.calendar') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-calendar3"></i>
-
-                <span>Calendar</span>
-
-            </a>
-
-
-            {{-- Notifications --}}
-
-            <a
-                href="{{ route('student.notifications') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.notifications') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-bell"></i>
-
-                <span>Notifications</span>
-
-            </a>
-
-
-            {{-- Reports --}}
-
-            <a
-                href="{{ route('student.reports') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.reports') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-file-earmark-bar-graph"></i>
-
-                <span>Reports</span>
-
-            </a>
-
-            <a
-                href="{{ route('student.settings') }}"
-                class="student-nav-link
-                {{ request()->routeIs('student.settings') ? 'active' : '' }}"
-            >
-                <i class="bi bi-gear"></i>
-                <span>Settings</span>
-            </a>
-
-
-        </nav>
-
-
-
-        {{-- =================================================
-             USER CARD
-        ================================================== --}}
-
-        <div class="student-user-section">
-
-            <div class="student-user-card">
-
-
-                <div class="student-user-icon">
-
-                    <i class="bi bi-person-fill"></i>
-
-                </div>
-
-
-                <div class="student-user-info">
-
-                    <div class="student-user-name">
-
-                        {{ Auth::user()->name ?? 'Student' }}
+                        <div class="student-logo-subtitle">
+                            Student Portal
+                        </div>
 
                     </div>
 
-                    <div class="student-user-role">
-
-                        Student Portal
-
-                    </div>
-
-                </div>
-
+                </a>
 
             </div>
 
-        </div>
 
 
-    </aside>
+            {{-- =================================================
+             NAVIGATION
+        ================================================== --}}
+
+            <nav class="student-nav">
+
+
+                {{-- Dashboard --}}
+
+                <a href="{{ route('student.dashboard') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
+
+                    <i class="bi bi-grid-1x2-fill"></i>
+
+                    <span>Dashboard</span>
+
+                </a>
+
+
+                {{-- Profile --}}
+
+                <a href="{{ route('student.profile') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.profile') ? 'active' : '' }}">
+
+                    <i class="bi bi-person-circle"></i>
+
+                    <span>Profile</span>
+
+                </a>
+
+
+                {{-- Attendance --}}
+
+                <a href="{{ route('student.attendance') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.attendance') ? 'active' : '' }}">
+
+                    <i class="bi bi-calendar-check"></i>
+
+                    <span>Attendance</span>
+
+                </a>
+
+
+                {{-- Assignments --}}
+
+                <a href="{{ route('student.assignments') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.assignments') ? 'active' : '' }}">
+
+                    <i class="bi bi-journal-text"></i>
+
+                    <span>Assignments</span>
+
+                </a>
+
+
+                {{-- Quizzes --}}
+
+                <a href="{{ route('student.quizzes') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.quizzes') ? 'active' : '' }}">
+
+                    <i class="bi bi-patch-question"></i>
+
+                    <span>Quizzes</span>
+
+                </a>
+
+
+                {{-- Grades --}}
+
+                <a href="{{ route('student.grades') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.grades') ? 'active' : '' }}">
+
+                    <i class="bi bi-bar-chart-line"></i>
+
+                    <span>Grades</span>
+
+                </a>
+
+
+                {{-- Analytics --}}
+
+                <a href="{{ route('student.analytics') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.analytics') ? 'active' : '' }}">
+
+                    <i class="bi bi-graph-up-arrow"></i>
+
+                    <span>Analytics</span>
+
+                </a>
+
+
+                {{-- Courses --}}
+
+                <a href="{{ route('student.courses') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.courses') ? 'active' : '' }}">
+
+                    <i class="bi bi-book"></i>
+
+                    <span>Courses</span>
+
+                </a>
+
+
+                {{-- Calendar --}}
+
+                <a href="{{ route('student.calendar') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.calendar') ? 'active' : '' }}">
+
+                    <i class="bi bi-calendar3"></i>
+
+                    <span>Calendar</span>
+
+                </a>
+
+
+                {{-- Notifications --}}
+
+                <a href="{{ route('student.notifications') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.notifications') ? 'active' : '' }}">
+
+                    <i class="bi bi-bell"></i>
+
+                    <span>Notifications</span>
+
+                </a>
+
+
+                {{-- Reports --}}
+
+                <a href="{{ route('student.reports') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.reports') ? 'active' : '' }}">
+
+                    <i class="bi bi-file-earmark-bar-graph"></i>
+
+                    <span>Reports</span>
+
+                </a>
+
+                <a href="{{ route('student.settings') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.settings') ? 'active' : '' }}">
+                    <i class="bi bi-gear"></i>
+                    <span>Settings</span>
+                </a>
+
+
+            </nav>
 
 
 
-    {{-- =====================================================
+            {{-- =================================================
+             USER CARD
+        ================================================== --}}
+
+            <div class="student-user-section">
+
+                <div class="student-user-card">
+
+
+                    <div class="student-user-icon">
+
+                        <i class="bi bi-person-fill"></i>
+
+                    </div>
+
+
+                    <div class="student-user-info">
+
+                        <div class="student-user-name">
+
+                            {{ Auth::user()->name ?? 'Student' }}
+
+                        </div>
+
+                        <div class="student-user-role">
+
+                            Student Portal
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="student-logout">
+                        <i class="bi bi-box-arrow-right me-1"></i>
+                        Logout
+                    </button>
+                </form>
+
+            </div>
+
+
+        </aside>
+
+
+
+        {{-- =====================================================
          MAIN CONTENT
     ====================================================== --}}
 
-    <main class="student-content">
-        @include('components.student.header')
-        @yield('content')
-        @include('components.student.footer')
+        <main class="student-content">
+            @include('components.student.header')
+            @yield('content')
+            @include('components.student.footer')
 
-    </main>
-
-
-</div>
+        </main>
 
 
-@stack('scripts')
+    </div>
+
+
+    @stack('scripts')
 
 </body>
 

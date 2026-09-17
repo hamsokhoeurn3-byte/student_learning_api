@@ -103,6 +103,8 @@ Route::prefix('student')
         })->name('student.reports');
 
         Route::view('/settings', 'pages.student.settings.index')->name('student.settings');
+        Route::post('/settings/profile', [AuthController::class, 'updateProfile'])
+            ->name('student.profile.update');
     });
 
 
@@ -129,6 +131,8 @@ Route::prefix('teacher')
         Route::view('/calendar', 'pages.teacher.calendar.index')->name('teacher.calendar');
         Route::view('/reports', 'pages.teacher.reports.index')->name('teacher.reports');
         Route::view('/settings', 'pages.teacher.settings.index')->name('teacher.settings');
+        Route::post('/settings/profile', [AuthController::class, 'updateProfile'])
+            ->name('teacher.profile.update');
     });
 
 
@@ -152,4 +156,6 @@ Route::prefix('admin')
         Route::view('/assignments', 'pages.admin.assignments.index')->name('admin.assignments');
         Route::view('/reports', 'pages.admin.reports.index')->name('admin.reports');
         Route::view('/settings', 'pages.admin.settings.index')->name('admin.settings');
+        Route::post('/settings/profile', [AuthController::class, 'updateProfile'])
+            ->name('admin.profile.update');
     });

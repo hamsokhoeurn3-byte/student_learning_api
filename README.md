@@ -24,6 +24,12 @@ php artisan migrate
 ចាប់ផ្តើម Server
 php artisan serve
 
+User accoount and password
+
+Student: STD001 / 12345678
+Teacher: TCH001 / 12345678
+Admin: ADM001 / 12345678
+
 បន្ទាប់ពី Clone Flutter
 cd student_learning_analytics
 

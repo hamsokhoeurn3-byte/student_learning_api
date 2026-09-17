@@ -1,6 +1,7 @@
 @include('components.portal.shell', [
     'role' => 'Teacher Portal',
     'homeRoute' => 'teacher.dashboard',
+    'profileRoute' => 'teacher.settings',
     'navItems' => [
         ['route' => 'teacher.dashboard', 'label' => 'Dashboard', 'icon' => 'grid-1x2-fill'],
         ['route' => 'teacher.students', 'label' => 'Students', 'icon' => 'people'],

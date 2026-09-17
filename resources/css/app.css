@@ -8,25 +8,25 @@
 @theme { --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif; }
 
 :root {
-    --bs-primary: #6d28d9;
-    --bs-primary-rgb: 109, 40, 217;
-    --bs-link-color: #6d28d9;
-    --bs-link-hover-color: #5520ad;
-    --portal-purple: #6d28d9;
-    --portal-indigo: #4338ca;
-    --portal-lilac: #f1ebff;
-    --portal-canvas: #f7f8ff;
-    --portal-ink: #17203a;
+    --bs-primary: #0f766e;
+    --bs-primary-rgb: 15, 118, 110;
+    --bs-link-color: #0f766e;
+    --bs-link-hover-color: #115e59;
+    --portal-purple: #0f766e;
+    --portal-indigo: #155e75;
+    --portal-lilac: #e6f4f1;
+    --portal-canvas: #f5f8f8;
+    --portal-ink: #183238;
 }
 
 body { color: var(--portal-ink); background: var(--portal-canvas); }
-.btn-primary { --bs-btn-bg: var(--portal-purple); --bs-btn-border-color: var(--portal-purple); --bs-btn-hover-bg: #5520ad; --bs-btn-hover-border-color: #5520ad; --bs-btn-active-bg: #4c1d95; --bs-btn-active-border-color: #4c1d95; }
-.btn-outline-primary { --bs-btn-color: var(--portal-purple); --bs-btn-border-color: #cbb8ff; --bs-btn-hover-bg: var(--portal-purple); --bs-btn-hover-border-color: var(--portal-purple); }
+.btn-primary { --bs-btn-bg: var(--portal-purple); --bs-btn-border-color: var(--portal-purple); --bs-btn-hover-bg: #115e59; --bs-btn-hover-border-color: #115e59; --bs-btn-active-bg: #134e4a; --bs-btn-active-border-color: #134e4a; }
+.btn-outline-primary { --bs-btn-color: var(--portal-purple); --bs-btn-border-color: #a8d8d2; --bs-btn-hover-bg: var(--portal-purple); --bs-btn-hover-border-color: var(--portal-purple); }
 .text-primary { color: var(--portal-purple) !important; }
 .bg-primary { background-color: var(--portal-purple) !important; }
 .bg-primary-subtle { background-color: var(--portal-lilac) !important; }
 .border-primary { border-color: #cbb8ff !important; }
-.progress-bar { background: linear-gradient(90deg, #8b5cf6, #5b21b6); }
+.progress-bar { background: linear-gradient(90deg, #14b8a6, #0f766e); }
 .nav-pills { --bs-nav-pills-link-active-bg: var(--portal-purple); }
 .page-item.active .page-link { background-color: var(--portal-purple); border-color: var(--portal-purple); }
 .page-link { color: var(--portal-purple); }

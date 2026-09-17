@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,12 +12,10 @@
     <style>
         body {
             min-height: 100vh;
-            background: linear-gradient(
-                135deg,
-                #f3e8ff 0%,
-                #ffffff 50%,
-                #f5f3ff 100%
-            );
+            background: linear-gradient(135deg,
+                    #f3e8ff 0%,
+                    #ffffff 50%,
+                    #f5f3ff 100%);
             font-family: Arial, Helvetica, sans-serif;
         }
 
@@ -38,29 +37,14 @@
             padding: 50px;
         }
 
-        .logo-box {
-            width: 78px;
-            height: 78px;
+        .login-logo {
+            display: block;
+            width: min(100%, 300px);
+            aspect-ratio: 1;
+            height: auto;
             margin: 0 auto 20px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            background: linear-gradient(
-                135deg,
-                #7c3aed,
-                #9333ea
-            );
-
-            border-radius: 20px;
-
-            box-shadow:
-                0 10px 25px rgba(124, 58, 237, 0.25);
-        }
-
-        .logo-icon {
-            font-size: 38px;
+            object-fit: contain;
+            border-radius: 50%;
         }
 
         .brand-title {
@@ -266,11 +250,9 @@
             border: none;
             border-radius: 8px;
 
-            background: linear-gradient(
-                90deg,
-                #7c3aed,
-                #9333ea
-            );
+            background: linear-gradient(90deg,
+                    #7c3aed,
+                    #9333ea);
 
             color: white;
 
@@ -288,105 +270,6 @@
 
             box-shadow:
                 0 10px 25px rgba(124, 58, 237, 0.35);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Divider
-        |--------------------------------------------------------------------------
-        */
-
-        .divider {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-
-            margin: 30px 0;
-        }
-
-        .divider-line {
-            flex: 1;
-            height: 1px;
-            background: #e5e7eb;
-        }
-
-        .divider-text {
-            color: #9ca3af;
-            font-size: 14px;
-            white-space: nowrap;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Social Buttons
-        |--------------------------------------------------------------------------
-        */
-
-        .social-row {
-            display: flex;
-            gap: 15px;
-        }
-
-        .social-button {
-            flex: 1;
-
-            height: 48px;
-
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 9px;
-
-            background: white;
-
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-
-            color: #374151;
-
-            font-size: 15px;
-            font-weight: 500;
-
-            text-decoration: none;
-        }
-
-        .social-button:hover {
-            background: #f9fafb;
-        }
-
-        .google-icon {
-            color: #ea4335;
-            font-weight: 700;
-            font-size: 18px;
-        }
-
-        .microsoft-icon {
-            color: #2563eb;
-            font-size: 16px;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Register
-        |--------------------------------------------------------------------------
-        */
-
-        .register-text {
-            text-align: center;
-            margin-top: 30px;
-
-            color: #6b7280;
-            font-size: 14px;
-        }
-
-        .register-link {
-            color: #7c3aed;
-            font-weight: 600;
-            text-decoration: none;
-        }
-
-        .register-link:hover {
-            text-decoration: underline;
         }
 
         /*
@@ -421,282 +304,171 @@
                 font-size: 18px;
             }
 
-            .social-row {
-                flex-direction: column;
-            }
         }
     </style>
 </head>
 
 <body>
 
-<div class="login-wrapper">
+    <div class="login-wrapper">
 
-    <div class="login-card">
+        <div class="login-card">
 
-        {{-- Logo --}}
-        <div class="text-center">
+            {{-- Logo --}}
+            <div class="text-center">
 
-            <div class="logo-box">
-                <span class="logo-icon">🎓</span>
+                <img src="{{ asset('slas-logo.png') }}" alt="SLAS - Siem Reap University" class="login-logo">
+
+                <div class="description">
+                    Smart Insights for Better Learning
+                </div>
+
             </div>
 
-            <div class="brand-title">
-                SLAS
-            </div>
 
-            <div class="brand-line"></div>
+            {{-- Login Form --}}
+            <form method="POST" action="{{ route('login.submit') }}">
 
-            <div class="subtitle">
-                Student Learning Analytics
-            </div>
-
-            <div class="description">
-                Smart Insights for Better Learning
-            </div>
-
-        </div>
+                @csrf
 
 
-        {{-- Login Form --}}
-        <form
-            method="POST"
-            action="{{ route('login.submit') }}"
-        >
+                {{-- Login ID --}}
+                <div class="mb-4">
 
-            @csrf
+                    <label for="login_id" class="form-label">
+                        Student / Teacher / Admin ID
+                    </label>
 
+                    <div class="input-group-custom">
 
-            {{-- Login ID --}}
-            <div class="mb-4">
+                        {{-- Icon --}}
+                        <div class="input-icon">
+                            👤
+                        </div>
 
-                <label
-                    for="login_id"
-                    class="form-label"
-                >
-                    Student / Teacher / Admin ID
-                </label>
+                        {{-- Input --}}
+                        <input type="text" id="login_id" name="login_id" class="custom-input"
+                            placeholder="Enter your ID" value="{{ old('login_id') }}" autocomplete="username" required>
 
-                <div class="input-group-custom">
-
-                    {{-- Icon --}}
-                    <div class="input-icon">
-                        👤
                     </div>
 
-                    {{-- Input --}}
-                    <input
-                        type="text"
-                        id="login_id"
-                        name="login_id"
-                        class="custom-input"
-                        placeholder="Enter your ID"
-                        value="{{ old('login_id') }}"
-                        autocomplete="username"
-                        required
-                    >
+                    @error('login_id')
+                        <div class="error-message">
+                            {{ $message }}
+                        </div>
+                    @enderror
 
                 </div>
 
-                @error('login_id')
-                    <div class="error-message">
-                        {{ $message }}
+
+                {{-- Password --}}
+                <div class="mb-3">
+
+                    <label for="password" class="form-label">
+                        Password
+                    </label>
+
+                    <div class="password-group">
+
+                        {{-- Lock Icon --}}
+                        <div class="input-icon">
+                            🔒
+                        </div>
+
+                        {{-- Password --}}
+                        <input type="password" id="password" name="password" class="password-input"
+                            placeholder="Enter your password" autocomplete="current-password" required>
+
+                        {{-- Eye Button --}}
+                        <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password">
+                            👁️
+                        </button>
+
                     </div>
-                @enderror
 
-            </div>
-
-
-            {{-- Password --}}
-            <div class="mb-3">
-
-                <label
-                    for="password"
-                    class="form-label"
-                >
-                    Password
-                </label>
-
-                <div class="password-group">
-
-                    {{-- Lock Icon --}}
-                    <div class="input-icon">
-                        🔒
-                    </div>
-
-                    {{-- Password --}}
-                    <input
-                        type="password"
-                        id="password"
-                        name="password"
-                        class="password-input"
-                        placeholder="Enter your password"
-                        autocomplete="current-password"
-                        required
-                    >
-
-                    {{-- Eye Button --}}
-                    <button
-                        type="button"
-                        class="password-toggle"
-                        id="togglePassword"
-                        aria-label="Show password"
-                    >
-                        👁️
-                    </button>
+                    @error('password')
+                        <div class="error-message">
+                            {{ $message }}
+                        </div>
+                    @enderror
 
                 </div>
 
-                @error('password')
-                    <div class="error-message">
-                        {{ $message }}
-                    </div>
-                @enderror
 
-            </div>
+                {{-- Remember + Forgot --}}
+                <div class="remember-row">
 
+                    <label class="remember-label">
 
-            {{-- Remember + Forgot --}}
-            <div class="remember-row">
+                        <input type="checkbox" name="remember" value="1">
 
-                <label class="remember-label">
+                        <span>
+                            Remember me
+                        </span>
 
-                    <input
-                        type="checkbox"
-                        name="remember"
-                        value="1"
-                    >
+                    </label>
 
-                    <span>
-                        Remember me
-                    </span>
+                    <a href="#" class="forgot-link">
+                        Forgot password?
+                    </a>
 
-                </label>
-
-                <a
-                    href="#"
-                    class="forgot-link"
-                >
-                    Forgot password?
-                </a>
-
-            </div>
+                </div>
 
 
-            {{-- Sign In --}}
-            <button
-                type="submit"
-                class="login-button"
-            >
-                Sign In →
-            </button>
+                {{-- Sign In --}}
+                <button type="submit" class="login-button">
+                    Sign In →
+                </button>
 
-        </form>
+            </form>
 
-
-        {{-- Divider --}}
-        <div class="divider">
-
-            <div class="divider-line"></div>
-
-            <div class="divider-text">
-                or continue with
-            </div>
-
-            <div class="divider-line"></div>
-
-        </div>
-
-
-        {{-- Social Login --}}
-        <div class="social-row">
-
-            <a
-                href="#"
-                class="social-button"
-            >
-                <span class="google-icon">
-                    G
-                </span>
-
-                Google
-            </a>
-
-            <a
-                href="#"
-                class="social-button"
-            >
-                <span class="microsoft-icon">
-                    ▦
-                </span>
-
-                Microsoft
-            </a>
-
-        </div>
-
-
-        {{-- Register --}}
-        <div class="register-text">
-
-            Don't have an account?
-
-            <a
-                href="#"
-                class="register-link"
-            >
-                Register
-            </a>
 
         </div>
 
     </div>
 
-</div>
+
+    {{-- Password Show / Hide --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const password =
+                document.getElementById('password');
+
+            const togglePassword =
+                document.getElementById('togglePassword');
 
 
-{{-- Password Show / Hide --}}
-<script>
+            togglePassword.addEventListener('click', function() {
 
-    document.addEventListener('DOMContentLoaded', function () {
+                if (password.type === 'password') {
 
-        const password =
-            document.getElementById('password');
+                    password.type = 'text';
 
-        const togglePassword =
-            document.getElementById('togglePassword');
+                    togglePassword.textContent = '🙈';
 
+                    togglePassword.setAttribute(
+                        'aria-label',
+                        'Hide password'
+                    );
 
-        togglePassword.addEventListener('click', function () {
+                } else {
 
-            if (password.type === 'password') {
+                    password.type = 'password';
 
-                password.type = 'text';
+                    togglePassword.textContent = '👁️';
 
-                togglePassword.textContent = '🙈';
+                    togglePassword.setAttribute(
+                        'aria-label',
+                        'Show password'
+                    );
+                }
 
-                togglePassword.setAttribute(
-                    'aria-label',
-                    'Hide password'
-                );
-
-            } else {
-
-                password.type = 'password';
-
-                togglePassword.textContent = '👁️';
-
-                togglePassword.setAttribute(
-                    'aria-label',
-                    'Show password'
-                );
-            }
+            });
 
         });
-
-    });
-
-</script>
+    </script>
 
 </body>
+
 </html>

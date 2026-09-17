@@ -1,6 +1,7 @@
 @include('components.portal.shell', [
     'role' => 'Admin Panel',
     'homeRoute' => 'admin.dashboard',
+    'profileRoute' => 'admin.settings',
     'navItems' => [
         ['route' => 'admin.dashboard', 'label' => 'Dashboard', 'icon' => 'grid-1x2-fill'],
         ['route' => 'admin.students', 'label' => 'Students', 'icon' => 'mortarboard'],

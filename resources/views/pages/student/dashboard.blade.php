@@ -270,7 +270,7 @@
                             Upcoming Deadlines
                         </h5>
 
-                        <a href="#" class="text-primary small text-decoration-none">
+                        <a href="{{ route('student.assignments') }}" class="text-primary small text-decoration-none">
                             View all
                         </a>
 
@@ -457,7 +457,7 @@
                             Recent Activity
                         </h5>
 
-                        <a href="#" class="text-primary small">
+                        <a href="{{ route('student.notifications') }}" class="text-primary small">
                             View all
                         </a>
 
@@ -583,7 +583,7 @@
                             Subject Performance
                         </h5>
 
-                        <a href="#" class="text-primary small">
+                        <a href="{{ route('student.analytics') }}" class="text-primary small">
                             View all
                         </a>
 

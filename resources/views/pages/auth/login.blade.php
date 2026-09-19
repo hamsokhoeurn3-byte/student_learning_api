@@ -12,10 +12,7 @@
     <style>
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg,
-                    #f3e8ff 0%,
-                    #ffffff 50%,
-                    #f5f3ff 100%);
+            background: #dcecff url('{{ asset('bg.png') }}') center / cover no-repeat fixed;
             font-family: Arial, Helvetica, sans-serif;
         }
 
@@ -24,25 +21,26 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 40px 15px;
+            padding: 24px 15px;
+            background: rgba(255, 255, 255, 0.16);
         }
 
         .login-card {
             width: 100%;
-            max-width: 500px;
+            max-width: 405px;
             background: #ffffff;
             border: 1px solid #e5e7eb;
             border-radius: 12px;
             box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
-            padding: 50px;
+            padding: 34px 40px 36px;
         }
 
         .login-logo {
             display: block;
-            width: min(100%, 300px);
+            width: min(100%, 220px);
             aspect-ratio: 1;
             height: auto;
-            margin: 0 auto 20px;
+            margin: 0 auto 14px;
             object-fit: contain;
             border-radius: 50%;
         }
@@ -72,13 +70,14 @@
 
         .description {
             color: #6b7280;
-            font-size: 15px;
-            margin-bottom: 35px;
+            font-size: 13px;
+            margin-bottom: 26px;
         }
 
         .form-label {
             color: #111827;
             font-weight: 600;
+            font-size: 13px;
             margin-bottom: 8px;
         }
 
@@ -93,12 +92,12 @@
         .input-group-custom {
             display: flex;
             width: 100%;
-            height: 56px;
+            height: 45px;
         }
 
         .input-icon {
-            width: 56px;
-            min-width: 56px;
+            width: 45px;
+            min-width: 45px;
 
             display: flex;
             align-items: center;
@@ -110,22 +109,22 @@
 
             border-radius: 8px 0 0 8px;
 
-            font-size: 21px;
+            font-size: 17px;
         }
 
         .custom-input {
             flex: 1;
 
-            height: 56px;
+            height: 45px;
 
             border: 1px solid #d1d5db;
             border-left: 0;
 
             border-radius: 0 8px 8px 0;
 
-            padding: 0 16px;
+            padding: 0 13px;
 
-            font-size: 16px;
+            font-size: 14px;
 
             outline: none;
         }
@@ -146,21 +145,21 @@
         .password-group {
             display: flex;
             width: 100%;
-            height: 56px;
+            height: 45px;
         }
 
         .password-input {
             flex: 1;
 
-            height: 56px;
+            height: 45px;
 
             border: 1px solid #d1d5db;
             border-left: 0;
             border-right: 0;
 
-            padding: 0 16px;
+            padding: 0 13px;
 
-            font-size: 16px;
+            font-size: 14px;
 
             outline: none;
         }
@@ -173,8 +172,8 @@
         }
 
         .password-toggle {
-            width: 56px;
-            min-width: 56px;
+            width: 45px;
+            min-width: 45px;
 
             display: flex;
             align-items: center;
@@ -189,7 +188,7 @@
 
             cursor: pointer;
 
-            font-size: 20px;
+            font-size: 17px;
         }
 
         .password-toggle:hover {
@@ -205,10 +204,10 @@
         .remember-row {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-start;
 
-            margin-top: 18px;
-            margin-bottom: 25px;
+            margin-top: 14px;
+            margin-bottom: 20px;
         }
 
         .remember-label {
@@ -217,7 +216,7 @@
             gap: 8px;
 
             color: #374151;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .remember-label input {
@@ -230,7 +229,7 @@
             color: #7c3aed;
             text-decoration: none;
             font-weight: 600;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .forgot-link:hover {
@@ -245,7 +244,7 @@
 
         .login-button {
             width: 100%;
-            height: 56px;
+            height: 45px;
 
             border: none;
             border-radius: 8px;
@@ -256,7 +255,7 @@
 
             color: white;
 
-            font-size: 17px;
+            font-size: 14px;
             font-weight: 600;
 
             box-shadow:
@@ -293,7 +292,7 @@
         @media (max-width: 576px) {
 
             .login-card {
-                padding: 30px 22px;
+                padding: 28px 22px 30px;
             }
 
             .brand-title {
@@ -407,10 +406,6 @@
                         </span>
 
                     </label>
-
-                    <a href="#" class="forgot-link">
-                        Forgot password?
-                    </a>
 
                 </div>
 

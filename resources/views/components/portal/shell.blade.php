@@ -202,6 +202,7 @@
                 padding: 20px 16px;
             }
         }
+
     </style>
     @stack('styles')
 </head>

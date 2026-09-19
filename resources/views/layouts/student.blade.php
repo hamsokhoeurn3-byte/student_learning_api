@@ -66,9 +66,9 @@
 
             height: 100vh;
 
-            background: #ffffff;
+            background: #eaf4ff;
 
-            border-right: 1px solid #e5e7eb;
+            border-right: 1px solid #cfe3f5;
 
             display: flex;
             flex-direction: column;
@@ -414,6 +414,7 @@
                 padding: 10px 10px;
             }
         }
+
     </style>
 
     @stack('styles')

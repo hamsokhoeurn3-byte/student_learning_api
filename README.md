@@ -26,7 +26,7 @@ php artisan serve
 
 User accoount and password
 
-Student: STD001 / 12345678
+Student: STD001 -STD301/ 12345678
 Teacher: TCH001 / 12345678
 Admin: ADM001 / 12345678
 
@@ -133,3 +133,9 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
 
+The assignment workflow is in place:
+
+Assign a teacher: In Admin → Courses, open a course and choose Edit. Select the teacher and save.
+Assign students to a class: Open the course, select students under Enrolled students, and choose Enroll students.
+Teacher roster: The assigned teacher’s Students page now lists students enrolled in their courses.
+Student course list: Students see their real enrollments and published assignments under My Courses.

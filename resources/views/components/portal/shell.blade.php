@@ -24,18 +24,18 @@
         }
 
         .portal-sidebar {
-            width: 258px;
-            min-width: 258px;
-            background: #fff;
-            border-right: 1px solid #ebedf5;
-            padding: 22px 14px;
+            width: 260px;
+            min-width: 260px;
+            background: #eaf4ff;
+            border-right: 1px solid #cfe3f5;
+            padding: 28px 14px 14px;
             display: flex;
             flex-direction: column;
         }
 
         .portal-brand {
             padding: 0 8px 22px;
-            border-bottom: 1px solid #f0f1f7;
+            border-bottom: 1px solid #cfe3f5;
             color: #17203a;
             text-decoration: none;
         }
@@ -74,14 +74,14 @@
         }
 
         .portal-nav a:hover {
-            color: #0f766e;
-            background: #e6f4f1;
+            color: #6d28d9;
+            background: #f1ebff;
         }
 
         .portal-nav a.active {
             color: #fff;
-            background: linear-gradient(100deg, #14b8a6, #0f766e);
-            box-shadow: 0 6px 14px rgba(15, 118, 110, .2);
+            background: linear-gradient(135deg, #7c3aed, #5b21b6);
+            box-shadow: 0 6px 14px rgba(91, 33, 182, .2);
         }
 
         .portal-nav i {
@@ -91,19 +91,19 @@
 
         .portal-user {
             margin-top: auto;
-            border-radius: 14px;
-            padding: 12px;
-            background: #faf9ff;
+            border-radius: 16px;
+            padding: 14px;
+            background: #f8f9fa;
         }
 
         .portal-avatar {
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             display: grid;
             place-items: center;
             border-radius: 50%;
-            color: #0f766e;
-            background: #e6f4f1;
+            color: #6d28d9;
+            background: #dbeafe;
             overflow: hidden;
         }
 
@@ -117,7 +117,7 @@
 
         .portal-logout {
             width: 100%;
-            margin-top: 10px;
+            margin-top: 12px;
             border: 1px solid #e5e7eb;
             border-radius: 8px;
             padding: 8px 10px;

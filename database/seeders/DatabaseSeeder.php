@@ -76,5 +76,7 @@ class DatabaseSeeder extends Seeder
                 'status' => 'active',
             ]
         );
+
+        $this->call(CourseSeeder::class);
     }
 }

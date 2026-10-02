@@ -24,6 +24,7 @@
             <dt class="col-sm-4 col-lg-3 py-2 text-muted">Teacher</dt><dd class="col-sm-8 col-lg-9 py-2">{{ $course->teacher?->user?->name ?? ($course->teacher_id ? 'Teacher #' . $course->teacher_id : 'Not assigned') }}</dd>
             <dt class="col-sm-4 col-lg-3 py-2 text-muted">Academic year</dt><dd class="col-sm-8 col-lg-9 py-2">{{ $course->academic_year ?: 'Not set' }}</dd>
             <dt class="col-sm-4 col-lg-3 py-2 text-muted">Semester</dt><dd class="col-sm-8 col-lg-9 py-2">{{ $course->semester ?: 'Not set' }}</dd>
+            <dt class="col-sm-4 col-lg-3 py-2 text-muted">Class schedule</dt><dd class="col-sm-8 col-lg-9 py-2">{{ $course->day_of_week ? $course->day_of_week . ' · ' : '' }}{{ $course->start_time ? \Carbon\Carbon::parse($course->start_time)->format('H:i') : 'Not set' }}{{ $course->end_time ? ' - ' . \Carbon\Carbon::parse($course->end_time)->format('H:i') : '' }}{{ $course->room ? ' · ' . $course->room : '' }}{{ !$course->day_of_week && !$course->start_time && !$course->end_time && !$course->room ? 'Not set' : '' }}</dd>
             <dt class="col-sm-4 col-lg-3 py-2 text-muted">Status</dt><dd class="col-sm-8 col-lg-9 py-2">{{ ucfirst($course->status) }}</dd>
             <dt class="col-sm-4 col-lg-3 py-2 text-muted">Assignments</dt><dd class="col-sm-8 col-lg-9 py-2">{{ $course->assignments()->count() }}</dd>
         </dl>

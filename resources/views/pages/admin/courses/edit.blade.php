@@ -23,6 +23,18 @@
                 <div class="col-md-6"><label for="teacher_id" class="form-label">Teacher</label><select id="teacher_id" name="teacher_id" class="form-select"><option value="">Not assigned</option>@foreach($teachers as $teacher)<option value="{{ $teacher->id }}" @selected((string) old('teacher_id', $course->teacher_id) === (string) $teacher->id)>{{ $teacher->user?->name ?? trim($teacher->first_name . ' ' . $teacher->last_name) }} ({{ $teacher->teacher_id }})</option>@endforeach</select></div>
                 <div class="col-md-6"><label for="academic_year" class="form-label">Academic year</label><input id="academic_year" name="academic_year" value="{{ old('academic_year', $course->academic_year) }}" class="form-control" maxlength="20"></div>
                 <div class="col-md-6"><label for="semester" class="form-label">Semester</label><input id="semester" name="semester" value="{{ old('semester', $course->semester) }}" class="form-control" maxlength="50"></div>
+                <div class="col-md-6">
+                    <label for="day_of_week" class="form-label">Class day</label>
+                    <select id="day_of_week" name="day_of_week" class="form-select">
+                        <option value="">Not set</option>
+                        @foreach(['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] as $day)
+                            <option value="{{ $day }}" @selected(old('day_of_week', $course->day_of_week) === $day)>{{ $day }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md-3"><label for="start_time" class="form-label">Start time</label><input id="start_time" name="start_time" type="time" value="{{ old('start_time', $course->start_time ? \Carbon\Carbon::parse($course->start_time)->format('H:i') : '') }}" class="form-control"></div>
+                <div class="col-md-3"><label for="end_time" class="form-label">End time</label><input id="end_time" name="end_time" type="time" value="{{ old('end_time', $course->end_time ? \Carbon\Carbon::parse($course->end_time)->format('H:i') : '') }}" class="form-control"></div>
+                <div class="col-md-6"><label for="room" class="form-label">Room</label><input id="room" name="room" value="{{ old('room', $course->room) }}" class="form-control" maxlength="100"></div>
                 <div class="col-md-6"><label for="status" class="form-label">Status</label><select id="status" name="status" class="form-select"><option value="active" @selected(old('status', $course->status) === 'active')>Active</option><option value="inactive" @selected(old('status', $course->status) === 'inactive')>Inactive</option></select></div>
                 <div class="col-12"><label for="description" class="form-label">Description</label><textarea id="description" name="description" class="form-control" rows="4" maxlength="2000">{{ old('description', $course->description) }}</textarea></div>
             </div>

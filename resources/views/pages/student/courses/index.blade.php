@@ -24,9 +24,17 @@
     @if($assignments->isEmpty())
         <div class="student-card p-4 text-center text-muted">No published assignments are available for your enrolled courses.</div>
     @else
-        <div class="table-responsive student-card"><table class="table student-table align-middle mb-0"><thead><tr><th class="ps-4">Assignment</th><th>Course</th><th>Due date</th><th>Status</th></tr></thead><tbody>
+        <div class="table-responsive student-card"><table class="table student-table align-middle mb-0"><thead><tr><th class="ps-4">Assignment</th><th>Course</th><th>Availability</th><th>Status</th></tr></thead><tbody>
             @foreach($assignments as $assignment)
-                <tr><td class="ps-4"><strong>{{ $assignment->title }}</strong></td><td>{{ $assignment->course?->code ?? '—' }}</td><td>{{ $assignment->due_date?->format('M d, Y') ?? 'No due date' }}</td><td>{{ ucfirst($assignment->status) }}</td></tr>
+                <tr>
+                    <td class="ps-4"><strong>{{ $assignment->title }}</strong></td>
+                    <td>{{ $assignment->course?->code ?? '—' }}</td>
+                    <td>
+                        @if($assignment->starts_at)<small class="d-block">Starts {{ $assignment->starts_at->format('M d, Y H:i') }}</small>@endif
+                        <small class="d-block">Due {{ $assignment->ends_at?->format('M d, Y H:i') ?? $assignment->due_date?->format('M d, Y') ?? 'No due date' }}</small>
+                    </td>
+                    <td>{{ ucfirst($assignment->status) }}</td>
+                </tr>
             @endforeach
         </tbody></table></div>
     @endif

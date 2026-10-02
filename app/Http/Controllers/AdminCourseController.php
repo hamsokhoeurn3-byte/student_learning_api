@@ -85,6 +85,10 @@ class AdminCourseController extends Controller
             'teacher_id' => 'nullable|exists:teachers,id',
             'academic_year' => 'nullable|string|max:20',
             'semester' => 'nullable|string|max:50',
+            'day_of_week' => 'nullable|string|max:20',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i',
+            'room' => 'nullable|string|max:100',
             'status' => 'required|in:active,inactive',
         ]);
 

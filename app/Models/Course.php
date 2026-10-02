@@ -18,6 +18,10 @@ class Course extends Model
         'teacher_id',
         'academic_year',
         'semester',
+        'day_of_week',
+        'start_time',
+        'end_time',
+        'room',
         'status',
     ];
 

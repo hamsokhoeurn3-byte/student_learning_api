@@ -279,7 +279,52 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        $validated = $request->validate([
+        if ($user->role === 'student') {
+            $forbiddenFields = array_values(array_diff(
+                array_keys($request->all()),
+                ['profile_picture', '_token', '_method']
+            ));
+
+            if ($forbiddenFields !== []) {
+                $message = 'Students may only update their profile picture.';
+
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'message' => $message,
+                        'forbidden_fields' => $forbiddenFields,
+                    ], 422);
+                }
+
+                return back()->withErrors(['profile' => $message]);
+            }
+
+            $validated = $request->validate([
+                'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            ]);
+
+            if ($request->hasFile('profile_picture')) {
+                if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
+                    Storage::disk('public')->delete($user->profile_picture);
+                }
+
+                $user->profile_picture = Storage::disk('public')->putFile('profile-pictures', $request->file('profile_picture'));
+                $user->save();
+            }
+
+            if (! $request->expectsJson()) {
+                return back()->with('status', 'Profile picture updated successfully.');
+            }
+
+            $user = $user->fresh();
+
+            return response()->json([
+                'message' => 'Profile picture updated successfully.',
+                'user' => $user,
+                'profile' => $this->getProfileData($user),
+            ], 200);
+        }
+
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => [
                 'required',
@@ -288,12 +333,15 @@ class AuthController extends Controller
                 Rule::unique('users', 'email')->ignore($user->id),
             ],
             'password' => 'nullable|string|min:8|confirmed',
-            'first_name' => 'nullable|string|max:100',
-            'last_name' => 'nullable|string|max:100',
-            'department' => 'nullable|string|max:255',
-            'position' => 'nullable|string|max:255',
             'profile_picture' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
-        ]);
+        ];
+
+        $rules['first_name'] = 'nullable|string|max:100';
+        $rules['last_name'] = 'nullable|string|max:100';
+        $rules['department'] = 'nullable|string|max:255';
+        $rules['position'] = 'nullable|string|max:255';
+
+        $validated = $request->validate($rules);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
@@ -397,3 +445,5 @@ class AuthController extends Controller
         ];
     }
 }
+
+

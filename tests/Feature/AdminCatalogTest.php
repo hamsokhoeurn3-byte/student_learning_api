@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Course;
+use App\Models\Assignment;
+use App\Models\AssignmentAttempt;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
@@ -305,6 +307,25 @@ class AdminCatalogTest extends TestCase
             'teacher_id' => $teacher->id,
             'status' => 'active',
         ]);
+        $otherTeacherUser = User::create([
+            'name' => 'Teacher Two',
+            'email' => 'teacher.two.assignments@example.test',
+            'password' => 'password',
+            'role' => 'teacher',
+        ]);
+        $otherTeacher = Teacher::create([
+            'user_id' => $otherTeacherUser->id,
+            'teacher_id' => 'TCH779',
+            'first_name' => 'Teacher',
+            'last_name' => 'Two',
+            'status' => 'active',
+        ]);
+        $otherTeacherCourse = Course::create([
+            'name' => 'Other Teacher Course',
+            'code' => 'OT779',
+            'teacher_id' => $otherTeacher->id,
+            'status' => 'active',
+        ]);
         $unassignedCourse = Course::create([
             'name' => 'Unassigned Database Systems',
             'code' => 'DB778',
@@ -346,7 +367,21 @@ class AdminCatalogTest extends TestCase
             ->get(route('teacher.courses'))
             ->assertOk()
             ->assertSee('Assigned Web Development')
-            ->assertDontSee('Unassigned Database Systems');
+            ->assertDontSee('Unassigned Database Systems')
+            ->assertDontSee('Other Teacher Course');
+
+        $this->get(route('teacher.courses.show', $assignedCourse))
+            ->assertOk()
+            ->assertSee('Assigned Web Development')
+            ->assertSee('WD778')
+            ->assertDontSee('Edit course')
+            ->assertDontSee('Delete course');
+
+        $this->get(route('teacher.courses.show', $otherTeacherCourse))
+            ->assertNotFound();
+
+        $this->get(route('teacher.courses.show', $unassignedCourse))
+            ->assertNotFound();
 
         $this->get(route('teacher.assignments'))
             ->assertOk()
@@ -403,6 +438,123 @@ class AdminCatalogTest extends TestCase
             'course_id' => $unassignedCourse->id,
             'title' => 'Unauthorized assignment',
         ]);
+    }
+
+    public function test_student_quizzes_page_shows_only_published_quizzes_from_enrolled_courses(): void
+    {
+        $studentUser = User::create([
+            'name' => 'Quiz List Student',
+            'email' => 'student.quiz-list@example.test',
+            'password' => 'password',
+            'role' => 'student',
+        ]);
+        $student = Student::create([
+            'user_id' => $studentUser->id,
+            'student_id' => 'STD895',
+            'first_name' => 'Quiz List',
+            'last_name' => 'Student',
+            'date_of_birth' => '2005-01-01',
+            'gender' => 'Female',
+            'status' => 'enrolled',
+        ]);
+        $course = Course::create([
+            'name' => 'Teacher Assigned Biology',
+            'code' => 'BIO895',
+            'status' => 'active',
+        ]);
+        $course->students()->attach($student->id, ['status' => 'enrolled']);
+        $quiz = Assignment::create([
+            'course_id' => $course->id,
+            'title' => 'Cell Biology Quiz',
+            'description' => 'A real quiz assigned to the enrolled class.',
+            'assignment_type' => 'true_false',
+            'status' => 'published',
+            'due_date' => now()->addDays(2)->toDateString(),
+            'ends_at' => now()->addDays(2),
+        ]);
+        $quiz->questions()->create([
+            'prompt' => 'Cells are the basic unit of life.',
+            'correct_answer' => true,
+            'position' => 0,
+        ]);
+
+        $hiddenCourse = Course::create([
+            'name' => 'Not Enrolled Physics',
+            'code' => 'PHY895',
+            'status' => 'active',
+        ]);
+        Assignment::create([
+            'course_id' => $hiddenCourse->id,
+            'title' => 'Unassigned Physics Quiz',
+            'assignment_type' => 'true_false',
+            'status' => 'published',
+        ]);
+        Assignment::create([
+            'course_id' => $course->id,
+            'title' => 'Draft Biology Quiz',
+            'assignment_type' => 'true_false',
+            'status' => 'draft',
+        ]);
+
+        $this->actingAs($studentUser)
+            ->get(route('student.quizzes'))
+            ->assertOk()
+            ->assertSee('Cell Biology Quiz')
+            ->assertSee('BIO895')
+            ->assertSee('Teacher Assigned Biology')
+            ->assertDontSee('Unassigned Physics Quiz')
+            ->assertDontSee('Draft Biology Quiz')
+            ->assertDontSee('Arrays Practice Quiz');
+    }
+
+    public function test_student_global_search_returns_only_enrolled_courses_and_published_work(): void
+    {
+        $studentUser = User::create([
+            'name' => 'Search Student',
+            'email' => 'student.search@example.test',
+            'password' => 'password',
+            'role' => 'student',
+        ]);
+        $student = Student::create([
+            'user_id' => $studentUser->id,
+            'student_id' => 'STD892',
+            'first_name' => 'Search',
+            'last_name' => 'Student',
+            'date_of_birth' => '2005-01-01',
+            'gender' => 'Female',
+            'status' => 'enrolled',
+        ]);
+        $enrolledCourse = Course::create([
+            'name' => 'World History',
+            'code' => 'HIS892',
+            'status' => 'active',
+        ]);
+        $unassignedCourse = Course::create([
+            'name' => 'Hidden History',
+            'code' => 'HIS893',
+            'status' => 'active',
+        ]);
+        $enrolledCourse->students()->attach($student->id, ['status' => 'enrolled']);
+        Assignment::create([
+            'course_id' => $enrolledCourse->id,
+            'title' => 'History Chapter Quiz',
+            'description' => 'Review world history.',
+            'assignment_type' => 'true_false',
+            'status' => 'published',
+        ]);
+        Assignment::create([
+            'course_id' => $unassignedCourse->id,
+            'title' => 'Hidden History Assignment',
+            'assignment_type' => 'file_upload',
+            'status' => 'published',
+        ]);
+
+        $this->actingAs($studentUser)
+            ->get(route('student.search', ['q' => 'history']))
+            ->assertOk()
+            ->assertSee('World History')
+            ->assertSee('History Chapter Quiz')
+            ->assertDontSee('Hidden History');
     }
 
     public function test_teacher_can_view_edit_and_delete_only_their_own_class_assignments(): void
@@ -591,6 +743,7 @@ class AdminCatalogTest extends TestCase
             ->post(route('teacher.assignments.store'), [
                 'course_id' => $course->id,
                 'title' => 'True False Quiz',
+                'content_type' => 'quiz',
                 'description' => 'Answer both questions.',
                 'starts_at' => '2026-10-02T08:00',
                 'ends_at' => '2026-10-02T15:00',
@@ -603,7 +756,7 @@ class AdminCatalogTest extends TestCase
                     ['prompt' => 'Two plus two equals five.', 'correct_answer' => 'false'],
                 ],
             ])
-            ->assertRedirect(route('teacher.assignments'));
+            ->assertRedirect(route('teacher.quizzes'));
 
         $assignment = \App\Models\Assignment::where('title', 'True False Quiz')->firstOrFail();
         $this->assertDatabaseHas('assignments', [
@@ -622,6 +775,12 @@ class AdminCatalogTest extends TestCase
             ->assertSee('Questions and answers - True / False')
             ->assertSee('Add question')
             ->assertSee('Allow retakes');
+        $this->get(route('teacher.quizzes'))
+            ->assertOk()
+            ->assertSee('True False Quiz')
+            ->assertSee('Create Quiz')
+            ->assertSee('Quiz type')
+            ->assertDontSee('Create Assignment');
         $this->get(route('teacher.assignments.show', $assignment))
             ->assertOk()
             ->assertSee('The Earth orbits the Sun.')
@@ -686,6 +845,10 @@ class AdminCatalogTest extends TestCase
             'assignment_id' => $assignment->id,
             'prompt' => 'A week has seven days.',
         ]);
+
+        $this->delete(route('teacher.assignments.destroy', $assignment))
+            ->assertRedirect(route('teacher.quizzes'));
+        $this->assertDatabaseMissing('assignments', ['id' => $assignment->id]);
     }
 
     public function test_student_file_submission_is_private_and_limited_to_enrolled_class_members(): void
@@ -887,15 +1050,228 @@ class AdminCatalogTest extends TestCase
         $this->actingAs($teacherUser)
             ->get(route('teacher.grades'))
             ->assertOk()
-            ->assertSee('No grade records yet.')
-            ->assertSee('Showing 0 of 0 records')
+            ->assertSee('No student submissions to grade yet.')
+            ->assertSee('Awaiting score')
             ->assertDontSee('Sok Dara');
 
         $this->get(route('teacher.quizzes'))
             ->assertOk()
             ->assertSee('No quizzes yet.')
-            ->assertSee('Showing 0 of 0 records')
+            ->assertSee('Showing 0–0 of 0 quizzes')
             ->assertDontSee('Data Structures');
+    }
+
+    public function test_teacher_can_grade_submissions_only_in_assigned_courses_and_students_can_view_scores(): void
+    {
+        $teacherUser = User::create([
+            'name' => 'Grading Teacher',
+            'email' => 'teacher.grading@example.test',
+            'password' => 'password',
+            'role' => 'teacher',
+        ]);
+        $teacher = Teacher::create([
+            'user_id' => $teacherUser->id,
+            'teacher_id' => 'TCH890',
+            'first_name' => 'Grading',
+            'last_name' => 'Teacher',
+            'status' => 'active',
+        ]);
+        $course = Course::create([
+            'name' => 'Grading Course',
+            'code' => 'GR890',
+            'teacher_id' => $teacher->id,
+            'status' => 'active',
+        ]);
+        $studentUser = User::create([
+            'name' => 'Graded Student',
+            'email' => 'student.grading@example.test',
+            'password' => 'password',
+            'role' => 'student',
+        ]);
+        $student = Student::create([
+            'user_id' => $studentUser->id,
+            'student_id' => 'STD890',
+            'first_name' => 'Graded',
+            'last_name' => 'Student',
+            'date_of_birth' => '2005-01-01',
+            'gender' => 'Female',
+            'status' => 'enrolled',
+        ]);
+        $course->students()->attach($student->id, ['status' => 'enrolled']);
+
+        $assignment = Assignment::create([
+            'course_id' => $course->id,
+            'created_by' => $teacherUser->id,
+            'title' => 'Graded Assignment',
+            'assignment_type' => 'file_upload',
+            'status' => 'published',
+        ]);
+        $attempt = AssignmentAttempt::create([
+            'assignment_id' => $assignment->id,
+            'student_id' => $student->id,
+            'attempt_number' => 1,
+            'started_at' => now(),
+            'submitted_at' => now(),
+            'file_name' => 'work.pdf',
+        ]);
+        $quiz = Assignment::create([
+            'course_id' => $course->id,
+            'created_by' => $teacherUser->id,
+            'title' => 'Graded Quiz',
+            'assignment_type' => 'true_false',
+            'status' => 'published',
+        ]);
+        $quizAttempt = AssignmentAttempt::create([
+            'assignment_id' => $quiz->id,
+            'student_id' => $student->id,
+            'attempt_number' => 1,
+            'started_at' => now(),
+            'submitted_at' => now(),
+            'score' => 100,
+        ]);
+
+        $otherTeacherUser = User::create([
+            'name' => 'Other Grading Teacher',
+            'email' => 'teacher.other-grading@example.test',
+            'password' => 'password',
+            'role' => 'teacher',
+        ]);
+        $otherTeacher = Teacher::create([
+            'user_id' => $otherTeacherUser->id,
+            'teacher_id' => 'TCH891',
+            'first_name' => 'Other',
+            'last_name' => 'Teacher',
+            'status' => 'active',
+        ]);
+        $otherCourse = Course::create([
+            'name' => 'Other Grading Course',
+            'code' => 'GR891',
+            'teacher_id' => $otherTeacher->id,
+            'status' => 'active',
+        ]);
+        $otherAssignment = Assignment::create([
+            'course_id' => $otherCourse->id,
+            'created_by' => $otherTeacherUser->id,
+            'title' => 'Other Teacher Assignment',
+            'assignment_type' => 'file_upload',
+            'status' => 'published',
+        ]);
+        $otherAttempt = AssignmentAttempt::create([
+            'assignment_id' => $otherAssignment->id,
+            'student_id' => $student->id,
+            'attempt_number' => 1,
+            'started_at' => now(),
+            'submitted_at' => now(),
+        ]);
+
+        $this->actingAs($teacherUser)
+            ->get(route('teacher.grades'))
+            ->assertOk()
+            ->assertSee('Graded Assignment')
+            ->assertSee('Graded Quiz')
+            ->assertDontSee('Other Teacher Assignment');
+
+        $this->put(route('teacher.grades.update', $attempt), [
+            'score' => '87.5',
+        ])->assertRedirect(route('teacher.grades'));
+
+        $this->put(route('teacher.grades.update', $quizAttempt), [
+            'score' => '92',
+        ])->assertRedirect(route('teacher.grades'));
+
+        $this->put(route('teacher.grades.update', $otherAttempt), [
+            'score' => '50',
+        ])->assertNotFound();
+
+        $this->assertDatabaseHas('assignment_attempts', [
+            'id' => $attempt->id,
+            'score' => '87.50',
+        ]);
+        $this->assertDatabaseHas('assignment_attempts', [
+            'id' => $quizAttempt->id,
+            'score' => '92.00',
+        ]);
+        $this->assertDatabaseHas('assignment_attempts', [
+            'id' => $otherAttempt->id,
+            'score' => null,
+        ]);
+
+        $this->actingAs($studentUser)
+            ->get(route('student.grades'))
+            ->assertOk()
+            ->assertSee('Graded Assignment')
+            ->assertSee('Graded Quiz')
+            ->assertSee('87.50%')
+            ->assertSee('92.00%');
+    }
+
+    public function test_teacher_dashboard_shows_assigned_teaching_work_not_admin_registration_metrics(): void
+    {
+        $teacherUser = User::create([
+            'name' => 'Dashboard Teacher',
+            'email' => 'teacher.dashboard@example.test',
+            'password' => 'password',
+            'role' => 'teacher',
+        ]);
+        $teacher = Teacher::create([
+            'user_id' => $teacherUser->id,
+            'teacher_id' => 'TCH902',
+            'first_name' => 'Dashboard',
+            'last_name' => 'Teacher',
+            'status' => 'active',
+        ]);
+        $course = Course::create([
+            'name' => 'Dashboard Biology',
+            'code' => 'BIO902',
+            'teacher_id' => $teacher->id,
+            'status' => 'active',
+        ]);
+        $studentUser = User::create([
+            'name' => 'Dashboard Student',
+            'email' => 'student.dashboard@example.test',
+            'password' => 'password',
+            'role' => 'student',
+        ]);
+        $student = Student::create([
+            'user_id' => $studentUser->id,
+            'student_id' => 'STD902',
+            'first_name' => 'Dashboard',
+            'last_name' => 'Student',
+            'date_of_birth' => '2005-01-01',
+            'gender' => 'Female',
+            'status' => 'enrolled',
+        ]);
+        $course->students()->attach($student->id, ['status' => 'enrolled']);
+        $assignment = Assignment::create([
+            'course_id' => $course->id,
+            'created_by' => $teacherUser->id,
+            'title' => 'Biology Lab Report',
+            'assignment_type' => 'file_upload',
+            'status' => 'published',
+            'due_date' => now()->addDays(2)->toDateString(),
+            'ends_at' => now()->addDays(2),
+        ]);
+        AssignmentAttempt::create([
+            'assignment_id' => $assignment->id,
+            'student_id' => $student->id,
+            'attempt_number' => 1,
+            'started_at' => now(),
+            'submitted_at' => now(),
+            'file_name' => 'lab-report.pdf',
+        ]);
+
+        $this->actingAs($teacherUser)
+            ->get(route('teacher.dashboard'))
+            ->assertOk()
+            ->assertSee('data-live-clock', false)
+            ->assertSee('Assigned courses')
+            ->assertSee('Students')
+            ->assertSee('To grade')
+            ->assertSee('Submissions this week')
+            ->assertSee('Biology Lab Report')
+            ->assertSee('Dashboard Biology')
+            ->assertDontSee('New account registrations')
+            ->assertDontSee('Total students');
     }
 
     public function test_teacher_calendar_shows_only_assigned_class_schedules_and_assignment_deadlines(): void
@@ -1092,6 +1468,30 @@ class AdminCatalogTest extends TestCase
             ->get(route('admin.reports.export'))
             ->assertOk()
             ->assertDownload();
+    }
+
+    public function test_admin_can_export_report_as_pdf_and_dashboard_has_no_export_button(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->actingAs($admin)
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('data-live-clock', false)
+            ->assertSee('portal-profile-menu', false)
+            ->assertSee('admin@example.test')
+            ->assertSee('My Account')
+            ->assertSee('Sign out')
+            ->assertDontSee('Export report');
+
+        $this->get(route('admin.reports'))
+            ->assertOk()
+            ->assertSee('Export Report')
+            ->assertSee('Export as PDF');
+
+        $this->get(route('admin.reports.export-pdf'))
+            ->assertOk()
+            ->assertDownload('slas-report-' . now()->format('Y-m-d') . '.pdf');
     }
 
     public function test_admin_can_create_a_student_and_login_account(): void

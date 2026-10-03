@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -46,5 +47,18 @@ class User extends Authenticatable
     public function admin(): HasOne
     {
         return $this->hasOne(Admin::class);
+    }
+
+    public function getProfilePictureUrlAttribute(): ?string
+    {
+        if (! $this->profile_picture) {
+            return null;
+        }
+
+        $disk = Storage::disk('public');
+
+        return $disk->exists($this->profile_picture)
+            ? asset('storage/' . ltrim($this->profile_picture, '/'))
+            : null;
     }
 }

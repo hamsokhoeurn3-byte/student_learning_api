@@ -1,4 +1,6 @@
 @php
+    $isStudent = strtolower($audience ?? '') === 'student';
+    $studentProfile = $isStudent ? Auth::user()->student : null;
     $profileRoute = match (strtolower($audience ?? 'admin')) {
         'student' => 'student.profile.update',
         'teacher' => 'teacher.profile.update',
@@ -17,7 +19,7 @@
 @endif
 
 <div class="row g-4">
-    <div class="col-lg-8">
+    <div class="col-lg-{{ $isStudent ? 12 : 8 }}">
         <div class="card portal-card border-0">
             <div class="card-body p-4">
                 <h5 class="fw-bold mb-4">Personal information</h5>
@@ -25,18 +27,35 @@
                     @csrf
                     <div class="row g-3">
                         <div class="col-md-6"><label class="form-label small fw-semibold">Full name</label><input
-                                name="name" class="form-control" value="{{ Auth::user()->name ?? $audience }}"></div>
+                            @unless($isStudent) name="name" @endunless class="form-control" value="{{ Auth::user()->name ?? $audience }}" @readonly($isStudent)></div>
                         <div class="col-md-6"><label class="form-label small fw-semibold">Email address</label><input
-                                name="email" class="form-control"
-                                value="{{ Auth::user()->email ?? 'user@slas.edu' }}"></div>
+                            @unless($isStudent) name="email" @endunless class="form-control"
+                            value="{{ Auth::user()->email ?? 'user@slas.edu' }}" @readonly($isStudent)></div>
+                        @if($isStudent)
+                            <div class="col-12 mt-4"><h6 class="fw-bold mb-0">Student information</h6><p class="small text-muted mb-0">These details are managed by your school administrator.</p></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Student ID</label><input class="form-control" value="{{ $studentProfile?->student_id ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Date of birth</label><input class="form-control" value="{{ $studentProfile?->date_of_birth ? \Carbon\Carbon::parse($studentProfile->date_of_birth)->format('M d, Y') : 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Gender</label><input class="form-control" value="{{ $studentProfile?->gender ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Nationality</label><input class="form-control" value="{{ $studentProfile?->nationality ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Phone</label><input class="form-control" value="{{ $studentProfile?->phone ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Address</label><input class="form-control" value="{{ $studentProfile?->address ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Department</label><input class="form-control" value="{{ $studentProfile?->department ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Major</label><input class="form-control" value="{{ $studentProfile?->major ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Year level</label><input class="form-control" value="{{ $studentProfile?->year_level ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Semester</label><input class="form-control" value="{{ $studentProfile?->semester ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Academic year</label><input class="form-control" value="{{ $studentProfile?->academic_year ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Advisor</label><input class="form-control" value="{{ $studentProfile?->advisor ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Enrollment date</label><input class="form-control" value="{{ $studentProfile?->enrollment_date ? \Carbon\Carbon::parse($studentProfile->enrollment_date)->format('M d, Y') : 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Status</label><input class="form-control" value="{{ $studentProfile?->status ? ucfirst($studentProfile->status) : 'Not set' }}" readonly></div>
+                        @endif
                         <div class="col-md-12">
                             <div class="card border-0 bg-light-subtle">
                                 <div class="card-body p-3">
                                     <div class="d-flex align-items-center gap-3">
                                         <div class="rounded-circle overflow-hidden border border-2 border-primary-subtle bg-white d-flex align-items-center justify-content-center"
                                             style="width: 72px; height: 72px;">
-                                            @if (Auth::user()->profile_picture)
-                                                <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}"
+                                            @if (Auth::user()->profile_picture_url)
+                                                <img src="{{ Auth::user()->profile_picture_url }}"
                                                     alt="Profile"
                                                 class="img-fluid w-100 h-100 object-fit-cover">@else<span
                                                     class="fw-bold text-primary fs-4">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</span>
@@ -56,17 +75,18 @@
                     </div>
                     <hr class="my-4">
                     <h6 class="fw-bold">Notifications</h6>
-                    <div class="form-check form-switch mt-3"><input class="form-check-input" type="checkbox"
-                            checked><label class="form-check-label">Email notifications for deadlines and
+                        <div class="form-check form-switch mt-3"><input class="form-check-input" type="checkbox"
+                            checked @disabled($isStudent)><label class="form-check-label">Email notifications for deadlines and
                             updates</label></div>
                     <div class="form-check form-switch mt-2"><input class="form-check-input" type="checkbox"
-                            checked><label class="form-check-label">Weekly progress summary</label></div>
+                            checked @disabled($isStudent)><label class="form-check-label">Weekly progress summary</label></div>
                     <div class="text-end mt-4"><button type="submit" class="btn btn-primary px-4">Save changes</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+    @unless($isStudent)
     <div class="col-lg-4">
         <div class="card portal-card border-0">
             <div class="card-body p-4">
@@ -77,4 +97,5 @@
             </div>
         </div>
     </div>
+    @endunless
 </div>

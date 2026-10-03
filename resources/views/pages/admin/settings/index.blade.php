@@ -55,8 +55,8 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <div class="rounded-circle overflow-hidden border border-2 border-primary-subtle bg-white d-flex align-items-center justify-content-center"
                                         style="width: 72px; height: 72px;">
-                                        @if (Auth::user()->profile_picture)
-                                            <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}"
+                                        @if (Auth::user()->profile_picture_url)
+                                            <img src="{{ Auth::user()->profile_picture_url }}"
                                                 alt="Profile" class="img-fluid w-100 h-100 object-fit-cover">
                                         @else
                                             <span

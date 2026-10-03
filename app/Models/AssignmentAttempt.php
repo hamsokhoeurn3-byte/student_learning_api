@@ -17,6 +17,8 @@ class AssignmentAttempt extends Model
         'file_name',
         'answers',
         'score',
+        'graded_by',
+        'graded_at',
     ];
 
     protected function casts(): array
@@ -24,6 +26,7 @@ class AssignmentAttempt extends Model
         return [
             'started_at' => 'datetime',
             'submitted_at' => 'datetime',
+            'graded_at' => 'datetime',
             'answers' => 'array',
             'score' => 'decimal:2',
         ];
@@ -37,5 +40,10 @@ class AssignmentAttempt extends Model
     public function student(): BelongsTo
     {
         return $this->belongsTo(Student::class);
+    }
+
+    public function grader(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'graded_by');
     }
 }

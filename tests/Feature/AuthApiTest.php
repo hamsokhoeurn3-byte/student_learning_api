@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AuthApiTest extends TestCase
@@ -64,7 +65,7 @@ class AuthApiTest extends TestCase
         $this->assertNotEmpty($response->json('token'));
     }
 
-    public function test_authenticated_student_can_update_profile_via_api(): void
+    public function test_student_cannot_change_account_or_personal_fields_via_api(): void
     {
         $this->seed();
 
@@ -80,24 +81,36 @@ class AuthApiTest extends TestCase
             'email' => 'student.updated@slas.com',
             'password' => 'newpassword123',
             'password_confirmation' => 'newpassword123',
+            'phone' => '+855 99 999 999',
+            'address' => 'Phnom Penh, Cambodia',
             'first_name' => 'Sok',
             'last_name' => 'Dara Updated',
             'department' => 'Information Technology',
         ]);
 
         $response
-            ->assertOk()
-            ->assertJsonPath('message', 'Profile updated successfully.')
-            ->assertJsonPath('user.name', 'Sok Dara Updated');
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Students may only update their profile picture.');
 
         $this->assertDatabaseHas('users', [
-            'email' => 'student.updated@slas.com',
+            'email' => 'student@slas.com',
+            'name' => 'Sok Dara',
+        ]);
+
+        $this->assertDatabaseHas('students', [
+            'user_id' => 1,
+            'first_name' => 'Sok',
+            'last_name' => 'Dara',
+            'department' => 'Computer Science',
+            'phone' => null,
+            'address' => null,
         ]);
     }
 
     public function test_authenticated_student_can_update_profile_picture_via_api(): void
     {
         $this->seed();
+        Storage::fake('public');
 
         $login = $this->postJson('/api/login', [
             'login_id' => 'STD001',
@@ -110,22 +123,51 @@ class AuthApiTest extends TestCase
             ->withHeaders(['Accept' => 'application/json'])
             ->post('/api/profile', [
                 '_method' => 'PUT',
-                'name' => 'Sok Dara',
-                'email' => 'student.profile@slas.com',
-                'first_name' => 'Sok',
-                'last_name' => 'Dara',
                 'profile_picture' => UploadedFile::fake()->image('avatar.jpg', 200, 200),
             ]);
 
         $response
-            ->assertOk()
-            ->assertJsonPath('message', 'Profile updated successfully.');
+                ->assertOk()
+            ->assertJsonPath('message', 'Profile picture updated successfully.');
 
         $this->assertNotNull($response->json('user.profile_picture'));
 
         $this->assertDatabaseHas('users', [
-            'email' => 'student.profile@slas.com',
+                'email' => 'student@slas.com',
         ]);
+    }
+
+    public function test_student_can_only_edit_profile_picture_in_profile_and_settings_pages(): void
+    {
+        $this->seed();
+        $student = \App\Models\User::where('email', 'student@slas.com')->firstOrFail();
+
+        $this->actingAs($student)
+            ->get(route('student.profile.edit'))
+            ->assertOk()
+            ->assertSee('data-live-clock', false)
+            ->assertSee('student-profile-menu', false)
+            ->assertSee('student@slas.com')
+            ->assertSee('Student ID: STD001')
+            ->assertSee('My Account')
+            ->assertSee('Sign out')
+            ->assertDontSee('Logout')
+            ->assertSee('name="profile_picture"', false)
+            ->assertDontSee('name="name"', false)
+            ->assertDontSee('name="email"', false)
+            ->assertDontSee('name="phone"', false)
+            ->assertDontSee('name="address"', false)
+            ->assertDontSee('name="password"', false);
+
+        $this->get(route('student.settings'))
+            ->assertOk()
+            ->assertSee('Student information')
+            ->assertSee('Department')
+            ->assertSee('Computer Science')
+            ->assertSee('Academic year')
+            ->assertSee('name="profile_picture"', false)
+            ->assertDontSee('name="name"', false)
+            ->assertDontSee('name="email"', false);
     }
 
     public function test_student_record_can_be_created_via_students_api(): void
@@ -156,3 +198,4 @@ class AuthApiTest extends TestCase
         ]);
     }
 }
+

@@ -144,6 +144,10 @@
                 <h2 class="h5 fw-bold mb-1">All classes</h2>
                 <p class="small text-muted mb-0">List of available classes and their current assignment status.</p>
             </div>
+            <div class="d-flex gap-2">
+                <input id="classSearch" class="form-control form-control-sm" type="search" aria-label="Search classes" placeholder="Search classes" style="min-width: 180px;">
+                <button id="classSearchFilter" class="btn btn-outline-primary btn-sm" type="button"><i class="bi bi-funnel"></i> Filter</button>
+            </div>
         </div>
 
         @if($courses->isEmpty())
@@ -211,6 +215,36 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const classSearch = document.getElementById('classSearch');
+        const classTable = classSearch?.closest('.card')?.querySelector('table');
+        const classTableBody = classTable?.querySelector('tbody');
+
+        if (classSearch && classTableBody) {
+            const classRows = Array.from(classTableBody.querySelectorAll('tr'));
+            const noMatchRow = document.createElement('tr');
+            noMatchRow.classList.add('d-none');
+            const noMatchCell = document.createElement('td');
+            noMatchCell.colSpan = classTable.querySelectorAll('thead th').length;
+            noMatchCell.className = 'text-center text-muted py-4';
+            noMatchCell.textContent = 'No matching classes.';
+            noMatchRow.append(noMatchCell);
+            classTableBody.append(noMatchRow);
+
+            const filterClasses = function () {
+                const term = classSearch.value.trim().toLocaleLowerCase();
+                let visibleCount = 0;
+                classRows.forEach(function (row) {
+                    const matches = row.textContent.toLocaleLowerCase().includes(term);
+                    row.classList.toggle('d-none', !matches);
+                    visibleCount += matches ? 1 : 0;
+                });
+                noMatchRow.classList.toggle('d-none', term === '' || visibleCount > 0);
+            };
+
+            classSearch.addEventListener('input', filterClasses);
+            document.getElementById('classSearchFilter').addEventListener('click', filterClasses);
+        }
+
         const form = document.getElementById('newClassForm');
         if (!form) return;
 

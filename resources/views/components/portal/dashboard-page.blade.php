@@ -12,7 +12,6 @@
 @endphp
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
     <div><div class="small text-primary fw-semibold mb-1">Dashboard <span class="text-muted mx-1">/</span> Overview</div><h1 class="h2 fw-bold mb-1">Good morning, {{ $audience }}</h1><p class="text-muted mb-0">Live records from the database.</p></div>
-    <button class="btn btn-primary rounded-3 px-3"><i class="bi bi-download me-2"></i>Export report</button>
 </div>
 <div class="row g-3 mb-4">
     @foreach($stats as [$label, $value, $icon])

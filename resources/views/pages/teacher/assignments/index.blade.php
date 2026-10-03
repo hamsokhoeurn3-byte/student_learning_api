@@ -1,13 +1,14 @@
 @extends('layouts.teacher')
 @section('title', 'Assignments · Teacher · SLAS')
 @section('content')
+@php($isQuizPage = $isQuizPage ?? false)
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
     <div>
-        <div class="small text-primary fw-semibold mb-1">Dashboard <span class="text-muted mx-1">/</span> Assignments</div>
-        <h1 class="h2 fw-bold mb-1">Assignments</h1>
-        <p class="text-muted mb-0">Create work for students in your assigned classes.</p>
+        <div class="small text-primary fw-semibold mb-1">Dashboard <span class="text-muted mx-1">/</span> {{ $isQuizPage ? 'Quizzes' : 'Assignments' }}</div>
+        <h1 class="h2 fw-bold mb-1">{{ $isQuizPage ? 'Quizzes' : 'Assignments' }}</h1>
+        <p class="text-muted mb-0">{{ $isQuizPage ? 'Create and manage true/false quizzes for your assigned classes.' : 'Create work for students in your assigned classes.' }}</p>
     </div>
-    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createTeacherAssignment"><i class="bi bi-plus-lg me-2"></i>Create Assignment</button>
+    <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#createTeacherAssignment"><i class="bi bi-plus-lg me-2"></i>{{ $isQuizPage ? 'Create Quiz' : 'Create Assignment' }}</button>
 </div>
 
 @if(session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
@@ -20,7 +21,7 @@
 </div>
 
 <div class="card portal-card border-0">
-    <div class="card-body p-4 pb-3"><h2 class="h5 fw-bold mb-0">My assignments</h2></div>
+    <div class="card-body p-4 pb-3"><h2 class="h5 fw-bold mb-0">{{ $isQuizPage ? 'My quizzes' : 'My assignments' }}</h2></div>
     <div class="table-responsive">
         <table class="table portal-table align-middle mb-0">
             <thead><tr><th class="ps-4">Assignment</th><th>Course</th><th>Availability</th><th>Status</th><th class="text-end pe-4">Actions</th></tr></thead>
@@ -46,12 +47,12 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="5" class="text-center text-muted py-5">No assignments yet.</td></tr>
+                    <tr><td colspan="5" class="text-center text-muted py-5">{{ $isQuizPage ? 'No quizzes yet.' : 'No assignments yet.' }}</td></tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-    <div class="p-3 px-4 small text-muted border-top">Showing {{ $managementRows->firstItem() ?? 0 }}–{{ $managementRows->lastItem() ?? 0 }} of {{ number_format($managementCount) }} assignments</div>
+    <div class="p-3 px-4 small text-muted border-top">Showing {{ $managementRows->firstItem() ?? 0 }}–{{ $managementRows->lastItem() ?? 0 }} of {{ number_format($managementCount) }} {{ $isQuizPage ? 'quizzes' : 'assignments' }}</div>
     @if($managementRows->hasPages())<div class="px-4 pb-3">{{ $managementRows->links('pagination::bootstrap-5') }}</div>@endif
 </div>
 
@@ -86,15 +87,20 @@
                 </div>
 
                 <div class="assignment-step assignment-step-two d-none">
-                    <label class="form-label" for="teacherAssignmentType">Assignment type</label>
+                    <input type="hidden" name="content_type" value="{{ $isQuizPage ? 'quiz' : 'assignment' }}">
+                    <label class="form-label" for="teacherAssignmentType">{{ $isQuizPage ? 'Quiz type' : 'Assignment type' }}</label>
+                    @if($isQuizPage)
+                    <input id="teacherAssignmentType" type="hidden" name="assignment_type" value="true_false">
+                    @else
                     <select id="teacherAssignmentType" name="assignment_type" class="form-select mb-3" required>
                         <option value="file_upload" @selected(old('assignment_type', 'file_upload') === 'file_upload')>File upload</option>
                         <option value="true_false" @selected(old('assignment_type') === 'true_false')>Questions and answers - True / False</option>
                     </select>
+                    @endif
 
-                    <div id="fileUploadInfo" class="alert alert-light border">Students in the selected class will upload their completed work. Accepted formats: PDF, DOC, DOCX, ZIP, or TXT.</div>
+                    <div id="fileUploadInfo" class="alert alert-light border {{ $isQuizPage ? 'd-none' : '' }}">Students in the selected class will upload their completed work. Accepted formats: PDF, DOC, DOCX, ZIP, or TXT.</div>
 
-                    <div id="trueFalseQuestions" class="d-none">
+                    <div id="trueFalseQuestions" class="{{ $isQuizPage ? '' : 'd-none' }}">
                         <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
                             <div><h3 class="h6 fw-bold mb-0">True / false questions</h3><p class="small text-muted mb-0">Questions are graded automatically.</p></div>
                             <button class="btn btn-sm btn-outline-primary" id="addAssignmentQuestion" type="button"><i class="bi bi-plus-lg me-1"></i>Add question</button>

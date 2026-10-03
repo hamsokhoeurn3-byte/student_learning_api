@@ -52,10 +52,19 @@ Route::prefix('student')
         })->name('student.dashboard');
 
         Route::get('/profile', function () {
-            return view('pages.student.profile.index');
+            $student = Student::where('user_id', Auth::id())->first();
+
+            return view('pages.student.profile.index', [
+                'student' => $student,
+            ]);
         })->name('student.profile');
-        Route::get('/student/profile/edit', function () {
-            return view('pages.student.profile.edit');
+
+        Route::get('/profile/edit', function () {
+            $student = Student::where('user_id', Auth::id())->first();
+
+            return view('pages.student.profile.edit', [
+                'student' => $student,
+            ]);
         })->name('student.profile.edit');
 
 
@@ -81,11 +90,94 @@ Route::prefix('student')
         Route::get('/assignments/{assignment}/result', [StudentAssignmentController::class, 'result'])->name('student.assignments.result');
 
         Route::get('/quizzes', function () {
-            return view('pages.student.quizzes.index');
+            $student = Student::where('user_id', Auth::id())->first();
+            $enrolledCourseIds = $student
+                ? DB::table('course_student')->where('student_id', $student->id)->where('status', 'enrolled')->pluck('course_id')
+                : collect();
+            $quizzes = $enrolledCourseIds->isNotEmpty()
+                ? Assignment::with([
+                    'course',
+                    'questions',
+                    'attempts' => fn ($query) => $query
+                        ->where('student_id', $student->id)
+                        ->orderByDesc('attempt_number'),
+                ])
+                    ->whereIn('course_id', $enrolledCourseIds)
+                    ->where('assignment_type', 'true_false')
+                    ->where('status', 'published')
+                    ->orderBy('ends_at')
+                    ->get()
+                : collect();
+            $quizAttempts = $quizzes->flatMap(fn (Assignment $quiz) => $quiz->attempts);
+            $gradedQuizAttempts = $quizAttempts->filter(fn (AssignmentAttempt $attempt) => $attempt->score !== null);
+            $weekStart = now()->startOfWeek();
+            $weekEnd = now()->endOfWeek();
+            $dueThisWeek = $quizzes->filter(function (Assignment $quiz) use ($weekStart, $weekEnd) {
+                $dueAt = $quiz->ends_at ?? $quiz->due_date?->endOfDay();
+
+                return $dueAt && $dueAt->between($weekStart, $weekEnd);
+            })->count();
+
+            return view('pages.student.quizzes.index', [
+                'quizzes' => $quizzes,
+                'availableCount' => $quizzes->count(),
+                'completedCount' => $quizzes->filter(fn (Assignment $quiz) => $quiz->attempts->isNotEmpty())->count(),
+                'averageScore' => $gradedQuizAttempts->avg('score'),
+                'dueThisWeek' => $dueThisWeek,
+                'attemptCount' => $quizAttempts->count(),
+                'gradedCount' => $gradedQuizAttempts->count(),
+                'bestScore' => $gradedQuizAttempts->max('score'),
+            ]);
         })->name('student.quizzes');
 
+        Route::get('/search', function (Request $request) {
+            $validated = $request->validate([
+                'q' => 'required|string|max:100',
+            ]);
+            $term = trim($validated['q']);
+            $student = Student::where('user_id', Auth::id())->first();
+            $enrolledCourseIds = $student
+                ? $student->courses()->wherePivot('status', 'enrolled')->select('courses.id')
+                : collect();
+            $courses = $student
+                ? $student->courses()
+                    ->with('teacher.user')
+                    ->wherePivot('status', 'enrolled')
+                    ->where(fn ($query) => $query
+                        ->where('courses.name', 'like', '%' . $term . '%')
+                        ->orWhere('courses.code', 'like', '%' . $term . '%'))
+                    ->orderBy('courses.name')
+                    ->get()
+                : collect();
+            $assignments = Assignment::with('course')
+                ->whereIn('course_id', $enrolledCourseIds)
+                ->where('status', 'published')
+                ->where(fn ($query) => $query
+                    ->where('title', 'like', '%' . $term . '%')
+                    ->orWhere('description', 'like', '%' . $term . '%'))
+                ->orderBy('title')
+                ->get();
+
+            return view('pages.student.search', compact('term', 'courses', 'assignments'));
+        })->name('student.search');
+
         Route::get('/grades', function () {
-            return view('pages.student.grades.index');
+            $student = Student::where('user_id', Auth::id())->first();
+            $attempts = $student
+                ? AssignmentAttempt::with('assignment.course')
+                    ->where('student_id', $student->id)
+                    ->whereNotNull('submitted_at')
+                    ->latest('submitted_at')
+                    ->get()
+                : collect();
+            $gradedAttempts = $attempts->filter(fn (AssignmentAttempt $attempt) => $attempt->score !== null);
+
+            return view('pages.student.grades.index', [
+                'gradeAttempts' => $attempts,
+                'gradedCount' => $gradedAttempts->count(),
+                'pendingCount' => $attempts->count() - $gradedAttempts->count(),
+                'averageScore' => $gradedAttempts->avg('score'),
+            ]);
         })->name('student.grades');
 
         Route::get('/analytics', function () {
@@ -191,21 +283,42 @@ Route::prefix('teacher')
             $teacher = Teacher::where('user_id', Auth::id())->first();
             $teacherCourseIds = $teacher ? Course::where('teacher_id', $teacher->id)->pluck('id') : collect();
             $weekStart = now()->startOfWeek()->startOfDay();
-            $activityByDay = User::query()
-                ->whereBetween('created_at', [$weekStart, $weekStart->copy()->addDays(6)->endOfDay()])
-                ->selectRaw('DATE(created_at) as activity_date, COUNT(*) as total')
+            $submissionCounts = AssignmentAttempt::query()
+                ->whereIn('assignment_id', Assignment::whereIn('course_id', $teacherCourseIds)->select('id'))
+                ->whereBetween('submitted_at', [$weekStart, $weekStart->copy()->addDays(6)->endOfDay()])
+                ->selectRaw('DATE(submitted_at) as activity_date, COUNT(*) as total')
                 ->groupBy('activity_date')
-                ->pluck('total', 'activity_date')
-                ->all();
+                ->pluck('total', 'activity_date');
+            $submissionsByDay = collect(range(0, 6))->mapWithKeys(function ($offset) use ($weekStart, $submissionCounts) {
+                $day = $weekStart->copy()->addDays($offset);
+
+                return [$day->toDateString() => (int) $submissionCounts->get($day->toDateString(), 0)];
+            });
+            $pendingAttemptsQuery = AssignmentAttempt::query()
+                ->with(['assignment.course', 'student.user'])
+                ->whereIn('assignment_id', Assignment::whereIn('course_id', $teacherCourseIds)->select('id'))
+                ->whereNotNull('submitted_at')
+                ->whereNull('score');
+            $upcomingAssignments = Assignment::with('course')
+                ->whereIn('course_id', $teacherCourseIds)
+                ->where('status', 'published')
+                ->where(fn ($query) => $query
+                    ->whereDate('ends_at', '>=', today())
+                    ->orWhere(fn ($query) => $query->whereNull('ends_at')->whereDate('due_date', '>=', today())))
+                ->orderByRaw('COALESCE(ends_at, due_date) asc')
+                ->limit(5)
+                ->get();
 
             return view('pages.teacher.dashboard', [
                 'dashboardStats' => [
-                    ['Students', number_format($teacherCourseIds->isEmpty() ? 0 : Student::whereHas('courses', fn ($query) => $query->whereIn('courses.id', $teacherCourseIds))->count()), 'people'],
-                    ['Pending grading', 'N/A', 'clipboard-check'],
+                    ['Assigned courses', number_format($teacherCourseIds->count()), 'book'],
+                    ['Students', number_format($teacherCourseIds->isEmpty() ? 0 : Student::whereHas('courses', fn ($query) => $query->whereIn('courses.id', $teacherCourseIds)->where('course_student.status', 'enrolled'))->count()), 'people'],
+                    ['To grade', number_format((clone $pendingAttemptsQuery)->count()), 'clipboard-check'],
                     ['Active assignments', number_format(Assignment::whereIn('course_id', $teacherCourseIds)->where('status', 'published')->count()), 'journal-text'],
-                    ['Average attendance', 'N/A', 'calendar-check'],
                 ],
-                'activityByDay' => $activityByDay,
+                'submissionsByDay' => $submissionsByDay,
+                'pendingAttempts' => $pendingAttemptsQuery->latest('submitted_at')->limit(5)->get(),
+                'upcomingAssignments' => $upcomingAssignments,
             ]);
         })->name('teacher.dashboard');
 
@@ -413,6 +526,7 @@ Route::prefix('teacher')
                 'managementRows' => $managementRows,
                 'managementCount' => $managementRows->total(),
                 'courses' => $teacher ? Course::where('teacher_id', $teacher->id)->orderBy('name')->get(['id', 'name', 'code']) : collect(),
+                'isQuizPage' => false,
             ]);
         })->name('teacher.assignments');
         Route::post('/assignments', function (Request $request) {
@@ -428,6 +542,7 @@ Route::prefix('teacher')
                 'questions' => 'required_if:assignment_type,true_false|array|min:1',
                 'questions.*.prompt' => 'required_with:questions|string|max:2000',
                 'questions.*.correct_answer' => 'required_with:questions|in:true,false',
+                'content_type' => 'nullable|in:assignment,quiz',
                 'status' => 'required|in:draft,published,closed',
             ]);
             $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
@@ -462,7 +577,10 @@ Route::prefix('teacher')
                 }
             });
 
-            return redirect()->route('teacher.assignments')->with('status', 'Assignment created successfully.');
+            $isQuiz = ($validated['content_type'] ?? 'assignment') === 'quiz';
+
+            return redirect()->route($isQuiz ? 'teacher.quizzes' : 'teacher.assignments')
+                ->with('status', $isQuiz ? 'Quiz created successfully.' : 'Assignment created successfully.');
         })->name('teacher.assignments.store');
         $findAssignedTeacherAssignment = function (Assignment $assignment): Assignment {
             $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
@@ -557,12 +675,81 @@ Route::prefix('teacher')
         })->name('teacher.assignments.update');
         Route::delete('/assignments/{assignment}', function (Assignment $assignment) use ($findOwnedTeacherAssignment) {
             $assignment = $findOwnedTeacherAssignment($assignment);
+            $isQuiz = $assignment->assignment_type === 'true_false';
             $assignment->delete();
 
-            return redirect()->route('teacher.assignments')->with('status', 'Assignment deleted successfully.');
+            return redirect()->route($isQuiz ? 'teacher.quizzes' : 'teacher.assignments')
+                ->with('status', $isQuiz ? 'Quiz deleted successfully.' : 'Assignment deleted successfully.');
         })->name('teacher.assignments.destroy');
-        Route::view('/quizzes', 'pages.teacher.quizzes.index')->name('teacher.quizzes');
-        Route::view('/grades', 'pages.teacher.grades.index')->name('teacher.grades');
+        Route::get('/quizzes', function () {
+            $teacher = Teacher::where('user_id', Auth::id())->first();
+            $courseIds = $teacher ? Course::where('teacher_id', $teacher->id)->pluck('id') : collect();
+            $quizzes = Assignment::with('course')
+                ->whereIn('course_id', $courseIds)
+                ->where('assignment_type', 'true_false')
+                ->latest()
+                ->paginate(10);
+            $managementRows = $quizzes->through(fn (Assignment $quiz) => [
+                $quiz->title,
+                $quiz->course?->code ?? 'Course unavailable',
+                $quiz->due_date?->format('M d, Y')
+                    ? ($quiz->starts_at && $quiz->ends_at
+                        ? $quiz->starts_at->format('M d, Y H:i') . ' - ' . $quiz->ends_at->format('M d, Y H:i')
+                        : $quiz->due_date->format('M d, Y'))
+                    : 'No due date',
+                ucfirst($quiz->status),
+                $quiz->id,
+                (int) $quiz->created_by === (int) Auth::id(),
+            ]);
+
+            return view('pages.teacher.assignments.index', [
+                'managementStats' => [
+                    ['My quizzes', number_format($quizzes->total()), 'patch-question'],
+                    ['Due this week', number_format(Assignment::whereIn('course_id', $courseIds)->where('assignment_type', 'true_false')->whereBetween('due_date', [now()->startOfWeek()->toDateString(), now()->endOfWeek()->toDateString()])->count()), 'clock'],
+                    ['Published', number_format(Assignment::whereIn('course_id', $courseIds)->where('assignment_type', 'true_false')->where('status', 'published')->count()), 'journal-check'],
+                ],
+                'managementRows' => $managementRows,
+                'managementCount' => $quizzes->total(),
+                'courses' => $teacher ? Course::where('teacher_id', $teacher->id)->orderBy('name')->get(['id', 'name', 'code']) : collect(),
+                'isQuizPage' => true,
+            ]);
+        })->name('teacher.quizzes');
+        Route::get('/grades', function () {
+            $teacher = Teacher::where('user_id', Auth::id())->first();
+            $courseIds = $teacher ? Course::where('teacher_id', $teacher->id)->select('id') : collect();
+            $attemptQuery = AssignmentAttempt::whereHas('assignment', fn ($query) => $query->whereIn('course_id', $courseIds))
+                ->whereNotNull('submitted_at');
+            $attempts = (clone $attemptQuery)
+                ->with(['assignment.course', 'student.user', 'grader'])
+                ->latest('submitted_at')
+                ->paginate(20);
+            $gradedCount = (clone $attemptQuery)->whereNotNull('score')->count();
+
+            return view('pages.teacher.grades.index', [
+                'attempts' => $attempts,
+                'submittedCount' => (clone $attemptQuery)->count(),
+                'gradedCount' => $gradedCount,
+                'pendingCount' => (clone $attemptQuery)->whereNull('score')->count(),
+            ]);
+        })->name('teacher.grades');
+        Route::put('/grades/{attempt}', function (Request $request, AssignmentAttempt $attempt) {
+            $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
+            $attempt = AssignmentAttempt::whereKey($attempt->id)
+                ->whereHas('assignment.course', fn ($query) => $query->where('teacher_id', $teacher->id))
+                ->whereNotNull('submitted_at')
+                ->firstOrFail();
+            $validated = $request->validate([
+                'score' => 'required|numeric|min:0|max:100',
+            ]);
+
+            $attempt->update([
+                'score' => $validated['score'],
+                'graded_by' => Auth::id(),
+                'graded_at' => now(),
+            ]);
+
+            return redirect()->route('teacher.grades')->with('status', 'Score saved successfully.');
+        })->name('teacher.grades.update');
         Route::get('/courses', function () {
             $teacher = Teacher::where('user_id', Auth::id())->first();
             $courses = $teacher
@@ -590,6 +777,14 @@ Route::prefix('teacher')
                 'managementCount' => $courses->total(),
             ]);
         })->name('teacher.courses');
+        Route::get('/courses/{course}', function (Course $course) {
+            $teacher = Teacher::where('user_id', Auth::id())->firstOrFail();
+            $course = Course::with(['teacher.user', 'assignments'])
+                ->where('teacher_id', $teacher->id)
+                ->findOrFail($course->id);
+
+            return view('pages.teacher.courses.show', compact('course'));
+        })->name('teacher.courses.show');
         Route::get('/calendar', function (Request $request) {
             $validated = $request->validate([
                 'month' => 'nullable|date_format:Y-m',
@@ -1074,6 +1269,20 @@ Route::prefix('admin')
             }, 'slas-report-' . now()->format('Y-m-d') . '.csv', ['Content-Type' => 'text/csv']);
         })->name('admin.reports.export');
 
+        Route::get('/reports/export/pdf', function () {
+            $reportRows = [
+                ['Students', Student::count()],
+                ['Teachers', Teacher::count()],
+                ['Courses', Course::count()],
+                ['Assignments', Assignment::count()],
+            ];
+
+            return Pdf::loadView('pages.admin.reports.pdf', [
+                'reportRows' => $reportRows,
+                'generatedAt' => now()->format('F j, Y H:i'),
+            ])->download('slas-report-' . now()->format('Y-m-d') . '.pdf');
+        })->name('admin.reports.export-pdf');
+
         Route::get('/reports', function () {
             return view('pages.admin.reports.index', [
                 'managementStats' => [
@@ -1090,3 +1299,4 @@ Route::prefix('admin')
         Route::post('/settings/profile', [AuthController::class, 'updateProfile'])
             ->name('admin.profile.update');
     });
+

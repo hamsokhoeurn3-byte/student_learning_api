@@ -115,6 +115,50 @@
             background: #fff;
         }
 
+        .portal-profile-menu {
+            position: relative;
+        }
+
+        .portal-profile-menu > summary {
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .portal-profile-menu > summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .portal-account-menu {
+            position: absolute;
+            z-index: 50;
+            top: calc(100% + 12px);
+            right: 0;
+            width: min(320px, calc(100vw - 32px));
+            padding: 18px;
+            border: 1px solid #e4e7ec;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 16px 40px rgba(16, 24, 40, .16);
+        }
+
+        .portal-account-avatar {
+            width: 52px;
+            height: 52px;
+            flex: 0 0 52px;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+            border-radius: 50%;
+            color: #6d28d9;
+            background: #ede7ff;
+        }
+
+        .portal-account-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         .portal-logout {
             width: 100%;
             margin-top: 12px;
@@ -146,15 +190,6 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 30px;
-        }
-
-        .portal-search {
-            width: min(340px, 45vw);
-            border: 0;
-            background: #f5f6fb;
-            border-radius: 9px;
-            padding: 9px 13px;
-            font-size: .82rem;
         }
 
         .portal-content {
@@ -225,39 +260,50 @@
                     </a>
                 @endforeach
             </nav>
-            <div class="portal-user d-flex align-items-center gap-2">
-                <div class="portal-avatar">
-                    @if (Auth::user()->profile_picture)
-                        <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}"
-                            alt="{{ Auth::user()->name }}" />
-                    @else
-                        <i class="bi bi-person-fill"></i>
-                    @endif
-                </div>
-                <div class="user-copy small"><strong
-                        class="d-block text-truncate">{{ Auth::user()->name ?? $role }}</strong><span
-                        class="text-muted">{{ $role }}</span></div>
-                <form method="POST" action="{{ route('logout') }}" class="w-100">
-                    @csrf
-                    <button type="submit" class="portal-logout"><i
-                            class="bi bi-box-arrow-right me-1"></i>Logout</button>
-                </form>
-            </div>
         </aside>
         <section class="portal-main">
-            <header class="portal-header">
-                <input aria-label="Search" class="portal-search" placeholder="Search students, courses, reports...">
-                <div class="d-flex align-items-center gap-3"><button class="btn btn-light rounded-circle"><i
+            <header class="portal-header justify-content-end">
+                <div class="d-flex align-items-center gap-3"><time class="small text-muted text-nowrap" data-live-clock datetime="{{ now()->toIso8601String() }}" aria-label="Local date and time">{{ now()->format('M d, Y h:i:s A') }}</time><button class="btn btn-light rounded-circle"><i
                             class="bi bi-bell"></i></button>
-                    <a href="{{ route($profileRoute) }}" class="portal-avatar portal-profile-link"
-                        aria-label="Update profile" title="Update profile">
-                        @if (Auth::user()->profile_picture)
-                            <img src="{{ asset('storage/' . Auth::user()->profile_picture) }}"
-                                alt="{{ Auth::user()->name }}" />
-                        @else
-                            <i class="bi bi-person-fill"></i>
-                        @endif
-                    </a>
+                    @php
+                        $currentUser = Auth::user();
+                        $accountIdentifier = match ($currentUser->role) {
+                            'student' => $currentUser->student?->student_id,
+                            'teacher' => $currentUser->teacher?->teacher_id,
+                            'admin' => $currentUser->admin?->admin_id,
+                            default => null,
+                        };
+                    @endphp
+                    <details class="portal-profile-menu">
+                        <summary class="portal-avatar portal-profile-link" aria-label="Open account details" title="Account details">
+                            @if ($currentUser->profile_picture_url)
+                                <img src="{{ $currentUser->profile_picture_url }}" alt="{{ $currentUser->name }}" />
+                            @else
+                                <i class="bi bi-person-fill"></i>
+                            @endif
+                        </summary>
+                        <div class="portal-account-menu">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <div class="portal-account-avatar">
+                                    @if($currentUser->profile_picture_url)
+                                        <img src="{{ $currentUser->profile_picture_url }}" alt="{{ $currentUser->name }}">
+                                    @else
+                                        <i class="bi bi-person-fill fs-4"></i>
+                                    @endif
+                                </div>
+                                <div class="min-w-0">
+                                    <strong class="d-block text-truncate">{{ $currentUser->name }}</strong>
+                                    <span class="small text-muted text-truncate d-block">{{ $currentUser->email }}</span>
+                                </div>
+                            </div>
+                            <div class="small text-muted border-top pt-3 mb-3">{{ ucfirst($currentUser->role) }}{{ $accountIdentifier ? ' ID: ' . $accountIdentifier : '' }}</div>
+                            <a class="btn btn-outline-primary w-100 mb-2" href="{{ route($profileRoute) }}"><i class="bi bi-person-gear me-2"></i>My Account</a>
+                            <form method="POST" action="{{ route('logout') }}">
+                                @csrf
+                                <button class="btn btn-outline-danger w-100" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Sign out</button>
+                            </form>
+                        </div>
+                    </details>
                 </div>
             </header>
             <main class="portal-content">@yield('content')</main>

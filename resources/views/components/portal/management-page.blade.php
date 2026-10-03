@@ -6,6 +6,7 @@
     $isTeachers = $entity === 'Teachers';
     $isCourses = $entity === 'Courses';
     $isAdmin = request()->routeIs('admin.*');
+    $isTeacherCourses = request()->routeIs('teacher.courses');
     $isTeacherRoster = request()->routeIs('teacher.students');
     $isTeacherAssignments = request()->routeIs('teacher.assignments');
     $hasNoTeacherRecords = !$isAdmin && in_array($entity, ['Grades', 'Quizzes'], true) && !isset($managementRows);
@@ -20,16 +21,71 @@
         ? [['Data Structures · Linked List', 'CS101', 'Sep 12, 2026', '18 submissions'], ['Database Design Project', 'CS102', 'Sep 16, 2026', '24 submissions'], ['Responsive Portfolio', 'WD201', 'Sep 20, 2026', '31 submissions']]
         : ($isGrades ? [['Sok Dara', 'CS101 · Data Structures', 'A-', '85 / 100'], ['Sreyneang Kim', 'CS101 · Data Structures', 'B+', '82 / 100'], ['Visal Chea', 'CS102 · Database Systems', 'A', '94 / 100']] : [['Data Structures', 'CS101', '32 students', 'Active'], ['Database Systems', 'CS102', '28 students', 'Active'], ['Web Development', 'WD201', '31 students', 'Active']]));
 @endphp
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input[placeholder^="Search"]').forEach(function (input) {
+            if (input.form) return;
+
+            const card = input.closest('.card');
+            const table = card ? card.querySelector('table') : null;
+            const body = table ? table.querySelector('tbody') : null;
+            if (!body) return;
+
+            input.type = 'search';
+            input.setAttribute('aria-label', input.placeholder);
+            const rows = Array.from(body.querySelectorAll('tr')).filter(function (row) {
+                return !row.querySelector('td[colspan]');
+            });
+            const emptyRows = Array.from(body.querySelectorAll('tr')).filter(function (row) {
+                return row.querySelector('td[colspan]');
+            });
+            const noResults = document.createElement('tr');
+            noResults.classList.add('d-none');
+            const message = document.createElement('td');
+            message.colSpan = table.querySelectorAll('thead th').length || 1;
+            message.className = 'text-center text-muted py-4';
+            message.textContent = 'No matching records.';
+            noResults.append(message);
+            body.append(noResults);
+
+            const filterRows = function () {
+                const term = input.value.trim().toLocaleLowerCase();
+                let visibleCount = 0;
+                rows.forEach(function (row) {
+                    const matches = row.textContent.toLocaleLowerCase().includes(term);
+                    row.classList.toggle('d-none', !matches);
+                    visibleCount += matches ? 1 : 0;
+                });
+                emptyRows.forEach(function (row) {
+                    row.classList.toggle('d-none', term !== '');
+                });
+                noResults.classList.toggle('d-none', term === '' || visibleCount > 0);
+            };
+
+            input.addEventListener('input', filterRows);
+            const filterButton = input.parentElement.querySelector('button');
+            if (filterButton) {
+                filterButton.type = 'button';
+                filterButton.addEventListener('click', filterRows);
+            }
+        });
+    });
+</script>
 <div class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
     <div><div class="small text-primary fw-semibold mb-1">Dashboard <span class="text-muted mx-1">/</span> {{ $entity }}</div><h1 class="h2 fw-bold mb-1">{{ $entity }}</h1><p class="text-muted mb-0">{{ $description }}</p></div>
     @if($isAdmin && $entity === 'Reports')
-        <a class="btn btn-primary rounded-3 px-3" href="{{ route('admin.reports.export') }}"><i class="bi bi-download me-2"></i>{{ $action }}</a>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-primary rounded-3 px-3" href="{{ route('admin.reports.export') }}"><i class="bi bi-download me-2"></i>{{ $action }}</a>
+            <a class="btn btn-primary rounded-3 px-3" href="{{ route('admin.reports.export-pdf') }}"><i class="bi bi-file-earmark-pdf me-2"></i>Export as PDF</a>
+        </div>
     @else
         @if($isAdmin && $isCourses)
             <div class="d-flex gap-2">
                 <button class="btn btn-primary rounded-3 px-3" data-bs-toggle="modal" data-bs-target="#createCourse"><i class="bi bi-plus-lg me-2"></i>{{ $action }}</button>
                 <a href="{{ route('admin.assign-class') }}" class="btn btn-outline-primary rounded-3 px-3"><i class="bi bi-clipboard-check me-2"></i>Assign Class</a>
             </div>
+        @elseif($isTeacherCourses)
+            <span class="small text-muted">Courses assigned by an administrator</span>
         @else
             <button class="btn btn-primary rounded-3 px-3" @if(($isAdmin && ($isStudents || $isTeachers || $isAssignments)) || $isTeacherAssignments) data-bs-toggle="modal" data-bs-target="#{{ $isTeacherAssignments ? 'createTeacherAssignment' : ($isStudents ? 'createStudent' : ($isTeachers ? 'createTeacher' : 'createAssignment')) }}" @endif><i class="bi bi-plus-lg me-2"></i>{{ $action }}</button>
         @endif
@@ -77,6 +133,8 @@
                 <button class="btn btn-sm btn-outline-danger" type="submit" aria-label="Delete {{ $row[0] }}"><i class="bi bi-trash"></i></button>
             </form>
         </div>
+    @elseif($isTeacherCourses)
+        <a class="btn btn-sm btn-outline-primary" href="{{ route('teacher.courses.show', $row[4]) }}" aria-label="View {{ $row[0] }} details"><i class="bi bi-eye me-1"></i>View</a>
     @else
         <span class="text-muted">—</span>
     @endif

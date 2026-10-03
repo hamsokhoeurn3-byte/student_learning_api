@@ -482,19 +482,6 @@
                 </a>
 
 
-                {{-- Profile --}}
-
-                <a href="{{ route('student.profile') }}"
-                    class="student-nav-link
-                {{ request()->routeIs('student.profile') ? 'active' : '' }}">
-
-                    <i class="bi bi-person-circle"></i>
-
-                    <span>Profile</span>
-
-                </a>
-
-
                 {{-- Attendance --}}
 
                 <a href="{{ route('student.attendance') }}"
@@ -621,51 +608,6 @@
 
             </nav>
 
-
-
-            {{-- =================================================
-             USER CARD
-        ================================================== --}}
-
-            <div class="student-user-section">
-
-                <div class="student-user-card">
-
-
-                    <div class="student-user-icon">
-
-                        <i class="bi bi-person-fill"></i>
-
-                    </div>
-
-
-                    <div class="student-user-info">
-
-                        <div class="student-user-name">
-
-                            {{ Auth::user()->name ?? 'Student' }}
-
-                        </div>
-
-                        <div class="student-user-role">
-
-                            Student Portal
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-                    <button type="submit" class="student-logout">
-                        <i class="bi bi-box-arrow-right me-1"></i>
-                        Logout
-                    </button>
-                </form>
-
-            </div>
 
 
         </aside>

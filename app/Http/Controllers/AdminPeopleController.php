@@ -58,7 +58,7 @@ class AdminPeopleController extends Controller
     public function updateStudent(Request $request, Student $student): RedirectResponse
     {
         $validated = $request->validate([
-            'student_id' => ['required', 'string', 'max:50', Rule::unique('students', 'student_id')->ignore($student->id)],
+            'student_id' => ['required', 'string', 'max:50', Rule::unique('students', 'student_code')->ignore($student->id)],
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($student->user_id)],
@@ -144,7 +144,7 @@ class AdminPeopleController extends Controller
     public function updateTeacher(Request $request, Teacher $teacher): RedirectResponse
     {
         $validated = $request->validate([
-            'teacher_id' => ['required', 'string', 'max:50', Rule::unique('teachers', 'teacher_id')->ignore($teacher->id)],
+            'teacher_id' => ['required', 'string', 'max:50', Rule::unique('teachers', 'teacher_code')->ignore($teacher->id)],
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($teacher->user_id)],

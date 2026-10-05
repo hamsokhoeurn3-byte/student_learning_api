@@ -202,7 +202,7 @@ class AdminCatalogTest extends TestCase
             ])
             ->assertRedirect(route('admin.courses.show', $course));
 
-        $this->assertDatabaseHas('course_student', [
+        $this->assertDatabaseHas('course_enrollments', [
             'course_id' => $course->id,
             'student_id' => $student->id,
             'status' => 'enrolled',
@@ -1014,13 +1014,13 @@ class AdminCatalogTest extends TestCase
             'date' => '2026-10-02',
         ]));
 
-        $this->assertDatabaseHas('attendances', [
+        $this->assertDatabaseHas('attendance', [
             'course_id' => $course->id,
             'student_id' => $student->id,
             'status' => 'present',
             'marked_by' => $teacherUser->id,
         ]);
-        $this->assertTrue(\Illuminate\Support\Facades\DB::table('attendances')
+        $this->assertTrue(\Illuminate\Support\Facades\DB::table('attendance')
             ->where('course_id', $course->id)
             ->where('student_id', $student->id)
             ->whereDate('attendance_date', '2026-10-02')
@@ -1032,7 +1032,7 @@ class AdminCatalogTest extends TestCase
             'attendance' => [$otherStudent->id => 'absent'],
         ])->assertForbidden();
 
-        $this->assertDatabaseMissing('attendances', [
+        $this->assertDatabaseMissing('attendance', [
             'course_id' => $course->id,
             'student_id' => $otherStudent->id,
         ]);
@@ -1518,7 +1518,7 @@ class AdminCatalogTest extends TestCase
             'role' => 'student',
         ]);
         $this->assertDatabaseHas('students', [
-            'student_id' => 'STD900',
+            'student_code' => 'STD900',
             'first_name' => 'Nita',
         ]);
     }
@@ -1545,7 +1545,7 @@ class AdminCatalogTest extends TestCase
             'role' => 'teacher',
         ]);
         $this->assertDatabaseHas('teachers', [
-            'teacher_id' => 'TCH900',
+            'teacher_code' => 'TCH900',
             'first_name' => 'Dara',
         ]);
     }

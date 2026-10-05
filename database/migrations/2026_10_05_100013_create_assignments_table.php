@@ -8,27 +8,28 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('assignments', function (Blueprint $table) {
-            $table->id();
+        if (! Schema::hasTable('assignments')) {
+            Schema::create('assignments', function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('course_id')->constrained('courses')->restrictOnDelete();
-            $table->foreignId('teacher_id')->constrained('teachers')->restrictOnDelete();
-            $table->foreignId('semester_id')->constrained('semesters')->restrictOnDelete();
+                $table->foreignId('course_id')->constrained('courses')->restrictOnDelete();
+                $table->foreignId('teacher_id')->nullable()->constrained('teachers')->nullOnDelete();
+                $table->foreignId('semester_id')->nullable()->constrained('semesters')->nullOnDelete();
 
-            $table->string('title', 200);
-            $table->text('description')->nullable();
-            $table->decimal('total_score', 6, 2)->default(100);
-            $table->dateTime('due_date');
+                $table->string('title', 200);
+                $table->text('description')->nullable();
+                $table->decimal('total_score', 6, 2)->default(100);
+                $table->dateTime('due_date')->nullable();
 
-            // draft | published | closed
-            $table->string('status', 20)->default('draft');
+                // draft | published | closed
+                $table->string('status', 20)->default('draft');
 
-            $table->timestamps();
+                $table->timestamps();
 
-            $table->index(['course_id', 'semester_id'], 'assignments_course_semester_index');
-            $table->index('due_date');
-            $table->index('status');
-        });
+                $table->index('due_date');
+                $table->index('status');
+            });
+        }
     }
 
     public function down(): void

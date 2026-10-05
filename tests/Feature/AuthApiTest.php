@@ -92,16 +92,17 @@ class AuthApiTest extends TestCase
             ->assertUnprocessable()
             ->assertJsonPath('message', 'Students may only update their profile picture.');
 
+        $studentUser = \App\Models\User::where('email', 'student@slas.com')->firstOrFail();
+
         $this->assertDatabaseHas('users', [
             'email' => 'student@slas.com',
             'name' => 'Sok Dara',
         ]);
 
         $this->assertDatabaseHas('students', [
-            'user_id' => 1,
+            'user_id' => $studentUser->id,
             'first_name' => 'Sok',
             'last_name' => 'Dara',
-            'department' => 'Computer Science',
             'phone' => null,
             'address' => null,
         ]);

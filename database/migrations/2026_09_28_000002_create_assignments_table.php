@@ -11,10 +11,13 @@ return new class extends Migration
         Schema::create('assignments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('course_id')->constrained()->cascadeOnDelete();
+            $table->unsignedBigInteger('teacher_id')->nullable();
+            $table->unsignedBigInteger('semester_id')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->date('due_date')->nullable();
+            $table->decimal('total_score', 6, 2)->default(100);
+            $table->dateTime('due_date')->nullable();
             $table->string('status')->default('published');
             $table->timestamps();
         });

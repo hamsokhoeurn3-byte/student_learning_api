@@ -8,30 +8,40 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // One row = one class meeting / attendance session.
-        Schema::create('attendance', function (Blueprint $table) {
-            $table->id();
+        if (! Schema::hasTable('attendance')) {
+            Schema::create('attendance', function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('course_id')->constrained('courses')->restrictOnDelete();
-            $table->foreignId('teacher_id')->constrained('teachers')->restrictOnDelete();
-            $table->foreignId('semester_id')->constrained('semesters')->restrictOnDelete();
+                $table->foreignId('course_id')->constrained('courses')->restrictOnDelete();
+                $table->foreignId('teacher_id')->nullable()->constrained('teachers')->nullOnDelete();
+                $table->foreignId('semester_id')->nullable()->constrained('semesters')->nullOnDelete();
+                $table->foreignId('student_id')->nullable()->constrained('students')->nullOnDelete();
+                $table->foreignId('marked_by')->nullable()->constrained('users')->nullOnDelete();
 
-            $table->date('attendance_date');
-            $table->time('start_time')->nullable();
-            $table->time('end_time')->nullable();
-            $table->string('topic', 255)->nullable();
+                $table->date('attendance_date');
+                $table->time('start_time')->nullable();
+                $table->time('end_time')->nullable();
+                $table->string('topic', 255)->nullable();
 
-            // scheduled | completed | cancelled
-            $table->string('status', 20)->default('scheduled');
+                // scheduled | completed | cancelled
+                $table->string('status', 20)->default('scheduled');
 
-            $table->text('notes')->nullable();
+                $table->text('notes')->nullable();
 
-            $table->timestamps();
+                $table->timestamps();
 
-            $table->index('attendance_date');
-            $table->index(['course_id', 'semester_id', 'attendance_date'], 'attendance_course_semester_date_index');
-            $table->index(['teacher_id', 'attendance_date'], 'attendance_teacher_date_index');
-        });
+                $table->index('attendance_date');
+            });
+        } else {
+            Schema::table('attendance', function (Blueprint $table) {
+                if (! Schema::hasColumn('attendance', 'student_id')) {
+                    $table->foreignId('student_id')->nullable()->constrained('students')->nullOnDelete();
+                }
+                if (! Schema::hasColumn('attendance', 'marked_by')) {
+                    $table->foreignId('marked_by')->nullable()->constrained('users')->nullOnDelete();
+                }
+            });
+        }
     }
 
     public function down(): void

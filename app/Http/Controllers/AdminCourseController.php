@@ -49,8 +49,6 @@ class AdminCourseController extends Controller
         foreach ($validated['student_ids'] as $studentId) {
             $course->students()->syncWithoutDetaching([
                 $studentId => [
-                    'academic_year' => $course->academic_year,
-                    'semester' => $course->semester,
                     'status' => 'enrolled',
                 ],
             ]);
@@ -100,9 +98,9 @@ class AdminCourseController extends Controller
     public function destroy(Course $course): RedirectResponse
     {
         DB::transaction(function () use ($course) {
-            $course->assignments()->delete();
+            $course->assignments()->forceDelete();
             $course->students()->detach();
-            $course->delete();
+            $course->forceDelete();
         });
 
         return redirect()->route('admin.courses')->with('status', 'Course and its assignments deleted.');

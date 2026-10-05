@@ -16,7 +16,7 @@ return new class extends Migration
 
             // Academic history: courses / semesters with enrollments cannot be deleted.
             $table->foreignId('course_id')->constrained('courses')->restrictOnDelete();
-            $table->foreignId('semester_id')->constrained('semesters')->restrictOnDelete();
+            $table->foreignId('semester_id')->nullable()->constrained('semesters')->restrictOnDelete();
 
             $table->date('enrollment_date')->nullable();
 

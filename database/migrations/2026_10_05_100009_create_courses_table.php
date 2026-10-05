@@ -14,33 +14,44 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('courses', function (Blueprint $table) {
-            $table->id();
+        if (! Schema::hasTable('courses')) {
+            Schema::create('courses', function (Blueprint $table) {
+                $table->id();
 
-            $table->foreignId('department_id')
-                ->constrained('departments')
-                ->restrictOnDelete();
+                $table->foreignId('department_id')
+                    ->nullable()
+                    ->constrained('departments')
+                    ->nullOnDelete();
 
-            // Primary / coordinating teacher. Per-semester teachers are stored on the activity tables.
-            $table->foreignId('teacher_id')
-                ->nullable()
-                ->constrained('teachers')
-                ->nullOnDelete();
+                $table->foreignId('teacher_id')
+                    ->nullable()
+                    ->constrained('teachers')
+                    ->nullOnDelete();
 
-            $table->string('course_code', 30)->unique();
-            $table->string('course_name', 150);
-            $table->text('description')->nullable();
-            $table->decimal('credit', 3, 1)->default(3.0);
+                $table->string('course_code', 30)->unique();
+                $table->string('course_name', 150);
+                $table->text('description')->nullable();
+                $table->decimal('credit', 3, 1)->default(3.0);
 
-            // active | inactive | archived
-            $table->string('status', 20)->default('active');
+                $table->string('status', 20)->default('active');
 
-            $table->timestamps();
-            $table->softDeletes();
+                $table->timestamps();
+                $table->softDeletes();
 
-            $table->index('course_name');
-            $table->index('status');
-        });
+                $table->index('course_name');
+                $table->index('status');
+            });
+        } else {
+            Schema::table('courses', function (Blueprint $table) {
+                if (! Schema::hasColumn('courses', 'department_id')) {
+                    $table->foreignId('department_id')
+                        ->nullable()
+                        ->after('id')
+                        ->constrained('departments')
+                        ->nullOnDelete();
+                }
+            });
+        }
     }
 
     public function down(): void

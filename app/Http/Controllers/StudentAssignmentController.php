@@ -29,7 +29,7 @@ class StudentAssignmentController extends Controller
                 ->where('status', 'published')
                 ->whereHas('course.students', fn ($query) => $query
                     ->where('students.id', $student->id)
-                    ->where('course_student.status', 'enrolled'))
+                    ->where('course_enrollments.status', 'enrolled'))
                 ->orderBy('ends_at')
                 ->get()
             : collect();
@@ -158,7 +158,7 @@ class StudentAssignmentController extends Controller
             ->where('status', 'published')
             ->whereHas('course.students', fn ($query) => $query
                 ->where('students.id', $student->id)
-                ->where('course_student.status', 'enrolled'))
+                ->where('course_enrollments.status', 'enrolled'))
             ->firstOrFail();
     }
 

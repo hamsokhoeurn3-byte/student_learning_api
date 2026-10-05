@@ -18,6 +18,7 @@ class Student extends Model
 
     protected $fillable = [
         'user_id',
+        'student_id',
         'student_code',
         'department_id',
         'class_id',
@@ -40,6 +41,25 @@ class Student extends Model
      * while the database column is `student_code`.
      */
     protected $appends = ['student_id'];
+
+    protected static function booted(): void
+    {
+        static::creating(function (Student $student) {
+            if (empty($student->student_code) && !empty($student->attributes['student_id'] ?? null)) {
+                $student->student_code = $student->attributes['student_id'];
+                unset($student->attributes['student_id']);
+            }
+            if (empty($student->student_code)) {
+                $nextId = (static::withTrashed()->max('id') ?? 0) + 1;
+                $student->student_code = 'STD' . str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+
+    public function setStudentIdAttribute($value): void
+    {
+        $this->attributes['student_code'] = $value;
+    }
 
     protected function casts(): array
     {

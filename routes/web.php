@@ -92,7 +92,7 @@ Route::prefix('student')
         Route::get('/quizzes', function () {
             $student = Student::where('user_id', Auth::id())->first();
             $enrolledCourseIds = $student
-                ? DB::table('course_student')->where('student_id', $student->id)->where('status', 'enrolled')->pluck('course_id')
+                ? DB::table('course_enrollments')->where('student_id', $student->id)->where('status', 'enrolled')->pluck('course_id')
                 : collect();
             $quizzes = $enrolledCourseIds->isNotEmpty()
                 ? Assignment::with([
@@ -230,7 +230,7 @@ Route::prefix('teacher')
                 ? Course::where('teacher_id', $teacher->id)->orderBy('name')->get()
                 : collect();
             $courseIds = $courses->pluck('id');
-            $enrollmentCounts = DB::table('course_student')
+            $enrollmentCounts = DB::table('course_enrollments')
                 ->whereIn('course_id', $courseIds)
                 ->where('status', 'enrolled')
                 ->selectRaw('course_id, COUNT(*) as enrolled_count')
@@ -312,7 +312,7 @@ Route::prefix('teacher')
             return view('pages.teacher.dashboard', [
                 'dashboardStats' => [
                     ['Assigned courses', number_format($teacherCourseIds->count()), 'book'],
-                    ['Students', number_format($teacherCourseIds->isEmpty() ? 0 : Student::whereHas('courses', fn ($query) => $query->whereIn('courses.id', $teacherCourseIds)->where('course_student.status', 'enrolled'))->count()), 'people'],
+                    ['Students', number_format($teacherCourseIds->isEmpty() ? 0 : Student::whereHas('courses', fn ($query) => $query->whereIn('courses.id', $teacherCourseIds)->where('course_enrollments.status', 'enrolled'))->count()), 'people'],
                     ['To grade', number_format((clone $pendingAttemptsQuery)->count()), 'clipboard-check'],
                     ['Active assignments', number_format(Assignment::whereIn('course_id', $teacherCourseIds)->where('status', 'published')->count()), 'journal-text'],
                 ],
@@ -333,7 +333,7 @@ Route::prefix('teacher')
             if ($search !== '') {
                 $searchTerm = '%' . $search . '%';
                 $studentQuery->where(function ($query) use ($searchTerm, $teacherCourseIds) {
-                    $query->where('student_id', 'like', $searchTerm)
+                    $query->where('student_code', 'like', $searchTerm)
                         ->orWhere('first_name', 'like', $searchTerm)
                         ->orWhere('last_name', 'like', $searchTerm)
                         ->orWhere('department', 'like', $searchTerm)
@@ -376,12 +376,12 @@ Route::prefix('teacher')
                 'user',
                 'courses' => fn ($query) => $query
                     ->where('courses.teacher_id', $teacher->id)
-                    ->where('course_student.status', 'enrolled'),
+                    ->where('course_enrollments.status', 'enrolled'),
             ])
                 ->whereKey($student->id)
                 ->whereHas('courses', fn ($query) => $query
                     ->where('courses.teacher_id', $teacher->id)
-                    ->where('course_student.status', 'enrolled'))
+                    ->where('course_enrollments.status', 'enrolled'))
                 ->firstOrFail();
 
             return view('pages.teacher.students.show', compact('student'));
@@ -964,7 +964,7 @@ Route::prefix('admin')
 
         Route::post('/students', function (Request $request) {
             $validated = $request->validate([
-                'student_id' => 'required|string|max:50|unique:students,student_id',
+                'student_id' => 'required|string|max:50|unique:students,student_code',
                 'first_name' => 'required|string|max:100',
                 'last_name' => 'required|string|max:100',
                 'email' => 'required|email|max:255|unique:users,email',
@@ -1022,7 +1022,7 @@ Route::prefix('admin')
 
         Route::post('/teachers', function (Request $request) {
             $validated = $request->validate([
-                'teacher_id' => 'required|string|max:50|unique:teachers,teacher_id',
+                'teacher_id' => 'required|string|max:50|unique:teachers,teacher_code',
                 'first_name' => 'required|string|max:100',
                 'last_name' => 'required|string|max:100',
                 'email' => 'required|email|max:255|unique:users,email',
@@ -1120,8 +1120,6 @@ Route::prefix('admin')
                     'start_time' => $course->start_time,
                     'end_time' => $course->end_time,
                     'room' => $course->room,
-                    'academic_year' => $course->academic_year,
-                    'semester' => $course->semester,
                     'status' => $course->status,
                     'updated_at' => now(),
                 ]
@@ -1131,8 +1129,6 @@ Route::prefix('admin')
                 foreach ($validated['student_ids'] as $studentId) {
                     $course->students()->syncWithoutDetaching([
                         $studentId => [
-                            'academic_year' => $course->academic_year,
-                            'semester' => $course->semester,
                             'status' => 'enrolled',
                         ],
                     ]);
@@ -1173,8 +1169,6 @@ Route::prefix('admin')
                     'start_time' => $validated['start_time'] ?? null,
                     'end_time' => $validated['end_time'] ?? null,
                     'room' => $validated['room'] ?? null,
-                    'academic_year' => $validated['academic_year'] ?? null,
-                    'semester' => $validated['semester'] ?? null,
                     'status' => $course->status,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -1189,8 +1183,6 @@ Route::prefix('admin')
                 foreach ($validated['student_ids'] as $studentId) {
                     $course->students()->syncWithoutDetaching([
                         $studentId => [
-                            'academic_year' => $course->academic_year,
-                            'semester' => $course->semester,
                             'status' => 'enrolled',
                         ],
                     ]);

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,18 +17,86 @@ class Course extends Model
     protected $fillable = [
         'department_id',
         'teacher_id',
+        'name',
+        'code',
         'course_code',
         'course_name',
+        'department',
         'description',
         'credit',
+        'credits',
+        'academic_year',
+        'semester',
+        'day_of_week',
+        'start_time',
+        'end_time',
+        'room',
         'status',
     ];
+
+    protected $appends = ['course_code', 'course_name', 'code', 'name', 'credits'];
 
     protected function casts(): array
     {
         return [
             'credit' => 'float',
+            'credits' => 'float',
         ];
+    }
+
+    protected function courseCode(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->attributes['course_code'] ?? $this->attributes['code'] ?? null,
+            set: fn ($value) => [
+                'course_code' => $value,
+                'code' => $value,
+            ]
+        );
+    }
+
+    protected function code(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->attributes['code'] ?? $this->attributes['course_code'] ?? null,
+            set: fn ($value) => [
+                'code' => $value,
+                'course_code' => $value,
+            ]
+        );
+    }
+
+    protected function courseName(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->attributes['course_name'] ?? $this->attributes['name'] ?? null,
+            set: fn ($value) => [
+                'course_name' => $value,
+                'name' => $value,
+            ]
+        );
+    }
+
+    protected function name(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->attributes['name'] ?? $this->attributes['course_name'] ?? null,
+            set: fn ($value) => [
+                'name' => $value,
+                'course_name' => $value,
+            ]
+        );
+    }
+
+    protected function credits(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->attributes['credit'] ?? $this->attributes['credits'] ?? null,
+            set: fn ($value) => [
+                'credit' => $value,
+                'credits' => $value,
+            ]
+        );
     }
 
     public function department(): BelongsTo

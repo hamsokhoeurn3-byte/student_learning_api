@@ -44,7 +44,7 @@
                             <div class="col-md-6">
                                 <label class="form-label small fw-semibold">Admin ID</label>
                                 <input type="text" class="form-control"
-                                    value="{{ Auth::user()->admin?->admin_id ?? 'ADM001' }}" readonly>
+                                    value="{{ Auth::user()->admin?->admin_code ?? 'ADM001' }}" readonly>
                             </div>
                         </div>
 

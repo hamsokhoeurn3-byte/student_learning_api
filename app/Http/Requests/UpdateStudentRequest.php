@@ -18,7 +18,7 @@ class UpdateStudentRequest extends FormRequest
         return [
 
             'student_id' =>
-                'required|string|max:50|unique:students,student_id,' . $studentId,
+                'required|string|max:50|unique:students,student_code,' . $studentId,
 
             'first_name' =>
                 'required|string|max:100',

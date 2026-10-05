@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\User;
+use App\Services\AcademicProfileResolver;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
@@ -12,7 +13,7 @@ class StudentController extends Controller
 {
     public function index()
     {
-        $students = Student::with('user')->latest()->get();
+        $students = Student::with(['user', 'department', 'classRoom'])->latest()->get();
 
         return response()->json([
             'message' => 'Students retrieved successfully.',
@@ -20,10 +21,11 @@ class StudentController extends Controller
         ], 200);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, AcademicProfileResolver $resolver)
     {
+        // The request key stays `student_id` (Android contract); stored in students.student_code.
         $validated = $request->validate([
-            'student_id' => 'required|string|max:50|unique:students,student_id',
+            'student_id' => 'required|string|max:50|unique:students,student_code',
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'gender' => 'required|string|max:20',
@@ -33,6 +35,8 @@ class StudentController extends Controller
             'address' => 'nullable|string|max:255',
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')],
             'password' => 'required|string|min:8|confirmed',
+            'department_id' => 'nullable|integer|exists:departments,id',
+            'class_id' => 'nullable|integer|exists:classes,id',
             'department' => 'nullable|string|max:255',
             'major' => 'nullable|string|max:255',
             'academic_year' => 'nullable|string|max:20',
@@ -42,6 +46,14 @@ class StudentController extends Controller
             'enrollment_date' => 'nullable|date',
             'status' => 'nullable|string|max:50',
         ]);
+
+        $departmentId = $resolver->resolveDepartmentId(
+            $validated['department_id'] ?? null,
+            $validated['department'] ?? null,
+        );
+
+        $classId = $validated['class_id']
+            ?? $resolver->findClassId($departmentId, $validated['academic_year'] ?? null, $validated['year_level'] ?? null);
 
         $user = User::create([
             'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
@@ -52,7 +64,9 @@ class StudentController extends Controller
 
         $student = Student::create([
             'user_id' => $user->id,
-            'student_id' => $validated['student_id'],
+            'student_code' => $validated['student_id'],
+            'department_id' => $departmentId,
+            'class_id' => $classId,
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'date_of_birth' => $validated['date_of_birth'] ?? null,
@@ -60,11 +74,8 @@ class StudentController extends Controller
             'nationality' => $validated['nationality'] ?? 'Cambodian',
             'phone' => $validated['phone'] ?? null,
             'address' => $validated['address'] ?? null,
-            'department' => $validated['department'] ?? null,
             'major' => $validated['major'] ?? null,
-            'academic_year' => $validated['academic_year'] ?? null,
             'year_level' => $validated['year_level'] ?? null,
-            'semester' => $validated['semester'] ?? null,
             'advisor' => $validated['advisor'] ?? null,
             'enrollment_date' => $validated['enrollment_date'] ?? null,
             'status' => $validated['status'] ?? 'enrolled',
@@ -73,7 +84,7 @@ class StudentController extends Controller
         return response()->json([
             'message' => 'Student created successfully.',
             'user' => $user,
-            'data' => $student->load('user'),
+            'data' => $student->load(['user', 'department', 'classRoom']),
         ], 201);
     }
 
@@ -81,14 +92,14 @@ class StudentController extends Controller
     {
         return response()->json([
             'message' => 'Student retrieved successfully.',
-            'data' => $student->load('user'),
+            'data' => $student->load(['user', 'department', 'classRoom']),
         ], 200);
     }
 
-    public function update(Request $request, Student $student)
+    public function update(Request $request, Student $student, AcademicProfileResolver $resolver)
     {
         $validated = $request->validate([
-            'student_id' => ['required', 'string', 'max:50', Rule::unique('students', 'student_id')->ignore($student->id)],
+            'student_id' => ['required', 'string', 'max:50', Rule::unique('students', 'student_code')->ignore($student->id)],
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'gender' => 'required|string|max:20',
@@ -98,6 +109,8 @@ class StudentController extends Controller
             'address' => 'nullable|string|max:255',
             'email' => ['nullable', 'email', 'max:255', Rule::unique('users', 'email')->ignore($student->user?->id)],
             'password' => 'nullable|string|min:8|confirmed',
+            'department_id' => 'nullable|integer|exists:departments,id',
+            'class_id' => 'nullable|integer|exists:classes,id',
             'department' => 'nullable|string|max:255',
             'major' => 'nullable|string|max:255',
             'academic_year' => 'nullable|string|max:20',
@@ -107,6 +120,19 @@ class StudentController extends Controller
             'enrollment_date' => 'nullable|date',
             'status' => 'nullable|string|max:50',
         ]);
+
+        $departmentId = $resolver->resolveDepartmentId(
+            $validated['department_id'] ?? null,
+            $validated['department'] ?? null,
+        ) ?? $student->department_id;
+
+        $classId = $validated['class_id']
+            ?? $resolver->findClassId(
+                $departmentId,
+                $validated['academic_year'] ?? null,
+                $validated['year_level'] ?? null,
+            )
+            ?? $student->class_id;
 
         if ($student->user) {
             if (isset($validated['email'])) {
@@ -122,7 +148,9 @@ class StudentController extends Controller
         }
 
         $student->fill([
-            'student_id' => $validated['student_id'],
+            'student_code' => $validated['student_id'],
+            'department_id' => $departmentId,
+            'class_id' => $classId,
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'date_of_birth' => $validated['date_of_birth'] ?? $student->date_of_birth,
@@ -130,11 +158,8 @@ class StudentController extends Controller
             'nationality' => $validated['nationality'] ?? $student->nationality,
             'phone' => $validated['phone'] ?? $student->phone,
             'address' => $validated['address'] ?? $student->address,
-            'department' => $validated['department'] ?? $student->department,
             'major' => $validated['major'] ?? $student->major,
-            'academic_year' => $validated['academic_year'] ?? $student->academic_year,
             'year_level' => $validated['year_level'] ?? $student->year_level,
-            'semester' => $validated['semester'] ?? $student->semester,
             'advisor' => $validated['advisor'] ?? $student->advisor,
             'enrollment_date' => $validated['enrollment_date'] ?? $student->enrollment_date,
             'status' => $validated['status'] ?? $student->status,
@@ -144,7 +169,7 @@ class StudentController extends Controller
         return response()->json([
             'message' => 'Student updated successfully.',
             'user' => $student->user,
-            'data' => $student->fresh()->load('user'),
+            'data' => $student->fresh()->load(['user', 'department', 'classRoom']),
         ], 200);
     }
 

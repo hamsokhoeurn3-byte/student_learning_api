@@ -6,6 +6,7 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\Admin;
 use App\Models\User;
+use App\Services\AcademicProfileResolver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -49,7 +50,7 @@ class AuthController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $student = Student::where('student_id', $loginId)
+        $student = Student::where('student_code', $loginId)
             ->with('user')
             ->first();
 
@@ -65,7 +66,7 @@ class AuthController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            $teacher = Teacher::where('teacher_id', $loginId)
+            $teacher = Teacher::where('teacher_code', $loginId)
                 ->with('user')
                 ->first();
 
@@ -81,7 +82,7 @@ class AuthController extends Controller
                 |--------------------------------------------------------------------------
                 */
 
-                $admin = Admin::where('admin_id', $loginId)
+                $admin = Admin::where('admin_code', $loginId)
                     ->with('user')
                     ->first();
 
@@ -204,10 +205,11 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function register(Request $request)
+    public function register(Request $request, AcademicProfileResolver $resolver)
     {
+        // The request key stays `student_id` (Android contract); it is stored in students.student_code.
         $validated = $request->validate([
-            'student_id' => 'required|string|max:50|unique:students,student_id',
+            'student_id' => 'required|string|max:50|unique:students,student_code',
             'first_name' => 'required|string|max:100',
             'last_name' => 'required|string|max:100',
             'email' => 'required|email|max:255|unique:users,email',
@@ -217,15 +219,27 @@ class AuthController extends Controller
             'nationality' => 'nullable|string|max:100',
             'phone' => 'nullable|string|max:30',
             'address' => 'nullable|string|max:255',
+            'department_id' => 'nullable|integer|exists:departments,id',
+            'class_id' => 'nullable|integer|exists:classes,id',
+            // Accepted for backward compatibility: department name/code and academic year label.
             'department' => 'nullable|string|max:255',
             'major' => 'nullable|string|max:255',
             'academic_year' => 'nullable|string|max:20',
             'year_level' => 'nullable|integer|min:1|max:10',
+            // Semester is no longer stored on the student (see semesters / course_enrollments).
             'semester' => 'nullable|string|max:50',
             'advisor' => 'nullable|string|max:255',
             'enrollment_date' => 'nullable|date',
             'status' => 'nullable|string|max:50',
         ]);
+
+        $departmentId = $resolver->resolveDepartmentId(
+            $validated['department_id'] ?? null,
+            $validated['department'] ?? null,
+        );
+
+        $classId = $validated['class_id']
+            ?? $resolver->findClassId($departmentId, $validated['academic_year'] ?? null, $validated['year_level'] ?? null);
 
         $user = User::create([
             'name' => trim($validated['first_name'] . ' ' . $validated['last_name']),
@@ -236,7 +250,9 @@ class AuthController extends Controller
 
         $student = Student::create([
             'user_id' => $user->id,
-            'student_id' => $validated['student_id'],
+            'student_code' => $validated['student_id'],
+            'department_id' => $departmentId,
+            'class_id' => $classId,
             'first_name' => $validated['first_name'],
             'last_name' => $validated['last_name'],
             'date_of_birth' => $validated['date_of_birth'] ?? now()->toDateString(),
@@ -244,11 +260,8 @@ class AuthController extends Controller
             'nationality' => $validated['nationality'] ?? 'Cambodian',
             'phone' => $validated['phone'] ?? null,
             'address' => $validated['address'] ?? null,
-            'department' => $validated['department'] ?? null,
             'major' => $validated['major'] ?? null,
-            'academic_year' => $validated['academic_year'] ?? null,
             'year_level' => $validated['year_level'] ?? null,
-            'semester' => $validated['semester'] ?? null,
             'advisor' => $validated['advisor'] ?? null,
             'enrollment_date' => $validated['enrollment_date'] ?? now()->toDateString(),
             'status' => $validated['status'] ?? 'enrolled',
@@ -259,7 +272,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'Registration successful.',
             'user' => $user,
-            'student' => $student,
+            'student' => $student->load(['department', 'classRoom']),
             'token' => $token,
         ], 201);
     }
@@ -275,7 +288,7 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function updateProfile(Request $request)
+    public function updateProfile(Request $request, AcademicProfileResolver $resolver)
     {
         $user = $request->user();
 
@@ -372,10 +385,16 @@ class AuthController extends Controller
             }
 
             if (isset($validated['department'])) {
-                $profile->department = $validated['department'];
+                if ($profile instanceof Admin) {
+                    // Admins keep a free-text administrative department label.
+                    $profile->department = $validated['department'];
+                } else {
+                    // Students / teachers reference the departments table.
+                    $profile->department_id = $resolver->resolveDepartmentId(null, $validated['department']);
+                }
             }
 
-            if (isset($validated['position'])) {
+            if (isset($validated['position']) && ! ($profile instanceof Student)) {
                 $profile->position = $validated['position'];
             }
 
@@ -395,19 +414,19 @@ class AuthController extends Controller
 
     protected function findUserByLoginId(string $loginId): ?User
     {
-        $student = Student::where('student_id', $loginId)->with('user')->first();
+        $student = Student::where('student_code', $loginId)->with('user')->first();
 
         if ($student && $student->user) {
             return $student->user;
         }
 
-        $teacher = Teacher::where('teacher_id', $loginId)->with('user')->first();
+        $teacher = Teacher::where('teacher_code', $loginId)->with('user')->first();
 
         if ($teacher && $teacher->user) {
             return $teacher->user;
         }
 
-        $admin = Admin::where('admin_id', $loginId)->with('user')->first();
+        $admin = Admin::where('admin_code', $loginId)->with('user')->first();
 
         if ($admin && $admin->user) {
             return $admin->user;

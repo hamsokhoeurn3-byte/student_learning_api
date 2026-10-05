@@ -16,7 +16,7 @@ class StoreStudentRequest extends FormRequest
         return [
 
             'student_id' =>
-                'required|string|max:50|unique:students,student_id',
+                'required|string|max:50|unique:students,student_code',
 
             'first_name' =>
                 'required|string|max:100',

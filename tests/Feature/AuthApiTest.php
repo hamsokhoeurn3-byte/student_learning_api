@@ -194,7 +194,7 @@ class AuthApiTest extends TestCase
             ->assertJsonPath('data.student_id', 'STD500');
 
         $this->assertDatabaseHas('students', [
-            'student_id' => 'STD500',
+            'student_code' => 'STD500',
         ]);
     }
 }

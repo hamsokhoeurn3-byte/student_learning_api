@@ -19,11 +19,11 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
             <h1 class="h2 fw-bold mb-1">
-                Welcome back, {{ auth()->user()->name ?? 'Student' }}
+                {{ __('Welcome back') }}, {{ auth()->user()->name ?? __('Student') }}
             </h1>
 
             <p class="text-muted mb-0">
-                Your student profile
+                {{ __('Your student profile') }}
             </p>
         </div>
 
@@ -47,11 +47,11 @@
 
                         <div>
                             <div class="small text-muted mb-2">
-                                {{ $label }}
+                                {{ __($label) }}
                             </div>
 
                             <div class="h5 fw-bold mb-0">
-                                {{ $value }}
+                                {{ __($value) }}
                             </div>
                         </div>
 
@@ -80,14 +80,14 @@
                 <div class="card-body p-4">
 
                     <h2 class="h5 fw-bold mb-3">
-                        Academic records
+                        {{ __('Academic records') }}
                     </h2>
 
-                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">Enrolled courses</span><strong>{{ $enrolledCourseCount }}</strong></div>
-                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">Overall GPA</span><strong>{{ $gpaSummary['gpa'] !== null ? number_format($gpaSummary['gpa'], 2) : '—' }}</strong></div>
-                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">Credits earned</span><strong>{{ $gpaSummary['credits'] }}</strong></div>
-                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">Attendance rate</span><strong>{{ $attendanceSummary['rate'] !== null ? $attendanceSummary['rate'] . '%' : '—' }}</strong></div>
-                    <div class="d-flex justify-content-between small"><span class="text-muted">Academic standing</span><strong>{{ $gpaSummary['standing'] ? ucfirst($gpaSummary['standing']) : '—' }}</strong></div>
+                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">{{ __('Enrolled courses') }}</span><strong>{{ $enrolledCourseCount }}</strong></div>
+                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">{{ __('Overall GPA') }}</span><strong>{{ $gpaSummary['gpa'] !== null ? number_format($gpaSummary['gpa'], 2) : '—' }}</strong></div>
+                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">{{ __('Credits earned') }}</span><strong>{{ $gpaSummary['credits'] }}</strong></div>
+                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">{{ __('Attendance rate') }}</span><strong>{{ $attendanceSummary['rate'] !== null ? $attendanceSummary['rate'] . '%' : '—' }}</strong></div>
+                    <div class="d-flex justify-content-between small"><span class="text-muted">{{ __('Academic standing') }}</span><strong>{{ $gpaSummary['standing'] ? __(ucfirst($gpaSummary['standing'])) : '—' }}</strong></div>
 
                 </div>
 
@@ -103,7 +103,7 @@
                 <div class="card-body p-4">
 
                     <h2 class="h5 fw-bold mb-3">
-                        Recent activity
+                        {{ __('Recent activity') }}
                     </h2>
 
                     @forelse($recentAttempts as $attempt)
@@ -147,12 +147,12 @@
                     <div class="d-flex justify-content-between align-items-center mb-4">
 
                         <h5 class="fw-bold mb-0">
-                            Subject Performance
+                            {{ __('Subject Performance') }}
                         </h5>
 
                         <a href="{{ route('student.courses') }}"
                            class="text-primary small text-decoration-none">
-                            View all
+                            {{ __('View all') }}
                         </a>
 
                     </div>
@@ -211,7 +211,7 @@
                 <div class="card-body p-4">
 
                     <h5 class="fw-bold mb-4">
-                        Quick Actions
+                        {{ __('Quick Actions') }}
                     </h5>
 
                     <div class="row g-3">
@@ -233,7 +233,7 @@
                                     </div>
 
                                     <small>
-                                        Courses
+                                        {{ __('Courses') }}
                                     </small>
 
                                 </div>
@@ -260,7 +260,7 @@
                                     </div>
 
                                     <small>
-                                        Grades
+                                        {{ __('Grades') }}
                                     </small>
 
                                 </div>
@@ -287,7 +287,7 @@
                                     </div>
 
                                     <small>
-                                        Calendar
+                                        {{ __('Calendar') }}
                                     </small>
 
                                 </div>
@@ -314,7 +314,7 @@
                                     </div>
 
                                     <small>
-                                        Assignments
+                                        {{ __('Assignments') }}
                                     </small>
 
                                 </div>
@@ -341,7 +341,7 @@
                                     </div>
 
                                     <small>
-                                        Quizzes
+                                        {{ __('Quizzes') }}
                                     </small>
 
                                 </div>
@@ -368,7 +368,7 @@
                                     </div>
 
                                     <small>
-                                        Reports
+                                        {{ __('Reports') }}
                                     </small>
 
                                 </div>

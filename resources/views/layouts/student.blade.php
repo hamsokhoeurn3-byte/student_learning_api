@@ -16,6 +16,11 @@
     {{-- Bootstrap Icons --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+    {{-- Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         /* =====================================================
            GLOBAL
@@ -33,6 +38,7 @@
         body {
             background: #f7f8ff;
             font-family:
+                'Kantumruy Pro',
                 Inter,
                 -apple-system,
                 BlinkMacSystemFont,
@@ -488,7 +494,7 @@
                         </div>
 
                         <div class="student-logo-subtitle">
-                            Student Portal
+                            {{ __('Student Portal') }}
                         </div>
 
                     </div>
@@ -514,7 +520,7 @@
 
                     <i class="bi bi-grid-1x2-fill"></i>
 
-                    <span>Dashboard</span>
+                    <span>{{ __('Dashboard') }}</span>
 
                 </a>
 
@@ -527,7 +533,7 @@
 
                     <i class="bi bi-calendar-check"></i>
 
-                    <span>Attendance</span>
+                    <span>{{ __('Attendance') }}</span>
 
                 </a>
 
@@ -540,7 +546,7 @@
 
                     <i class="bi bi-journal-text"></i>
 
-                    <span>Assignments</span>
+                    <span>{{ __('Assignments') }}</span>
 
                 </a>
 
@@ -553,7 +559,7 @@
 
                     <i class="bi bi-patch-question"></i>
 
-                    <span>Quizzes</span>
+                    <span>{{ __('Quizzes') }}</span>
 
                 </a>
 
@@ -566,7 +572,7 @@
 
                     <i class="bi bi-bar-chart-line"></i>
 
-                    <span>Grades</span>
+                    <span>{{ __('Grades') }}</span>
 
                 </a>
 
@@ -579,7 +585,7 @@
 
                     <i class="bi bi-graph-up-arrow"></i>
 
-                    <span>Analytics</span>
+                    <span>{{ __('Analytics') }}</span>
 
                 </a>
 
@@ -592,7 +598,7 @@
 
                     <i class="bi bi-book"></i>
 
-                    <span>Courses</span>
+                    <span>{{ __('Courses') }}</span>
 
                 </a>
 
@@ -605,7 +611,7 @@
 
                     <i class="bi bi-calendar3"></i>
 
-                    <span>Calendar</span>
+                    <span>{{ __('Calendar') }}</span>
 
                 </a>
 
@@ -618,7 +624,7 @@
 
                     <i class="bi bi-bell"></i>
 
-                    <span>Notifications</span>
+                    <span>{{ __('Notifications') }}</span>
 
                 </a>
 
@@ -631,7 +637,7 @@
 
                     <i class="bi bi-file-earmark-bar-graph"></i>
 
-                    <span>Reports</span>
+                    <span>{{ __('Reports') }}</span>
 
                 </a>
 
@@ -639,7 +645,7 @@
                     class="student-nav-link
                 {{ request()->routeIs('student.settings') ? 'active' : '' }}">
                     <i class="bi bi-gear"></i>
-                    <span>Settings</span>
+                    <span>{{ __('Settings') }}</span>
                 </a>
 
 

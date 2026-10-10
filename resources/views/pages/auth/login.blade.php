@@ -8,12 +8,15 @@
     <title>SLAS - Login</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         body {
             min-height: 100vh;
             background: #dcecff url('{{ asset('bg.png') }}') center / cover no-repeat fixed;
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Kantumruy Pro', Inter, Arial, Helvetica, sans-serif;
         }
 
         .login-wrapper {
@@ -309,6 +312,10 @@
 
 <body>
 
+    <div style="position: absolute; top: 18px; right: 20px; z-index: 100;">
+        <x-language-switcher />
+    </div>
+
     <div class="login-wrapper">
 
         <div class="login-card">
@@ -319,7 +326,7 @@
                 <img src="{{ asset('slas-logo.png') }}" alt="SLAS - Siem Reap University" class="login-logo">
 
                 <div class="description">
-                    Smart Insights for Better Learning
+                    {{ __('Smart Insights for Better Learning') }}
                 </div>
 
             </div>
@@ -335,7 +342,7 @@
                 <div class="mb-4">
 
                     <label for="login_id" class="form-label">
-                        Student / Teacher / Admin ID
+                        {{ __('Student / Teacher / Admin ID') }}
                     </label>
 
                     <div class="input-group-custom">
@@ -347,7 +354,7 @@
 
                         {{-- Input --}}
                         <input type="text" id="login_id" name="login_id" class="custom-input"
-                            placeholder="Enter your ID" value="{{ old('login_id') }}" autocomplete="username" required>
+                            placeholder="{{ __('Enter your ID') }}" value="{{ old('login_id') }}" autocomplete="username" required>
 
                     </div>
 
@@ -364,7 +371,7 @@
                 <div class="mb-3">
 
                     <label for="password" class="form-label">
-                        Password
+                        {{ __('Password') }}
                     </label>
 
                     <div class="password-group">
@@ -376,7 +383,7 @@
 
                         {{-- Password --}}
                         <input type="password" id="password" name="password" class="password-input"
-                            placeholder="Enter your password" autocomplete="current-password" required>
+                            placeholder="{{ __('Enter your password') }}" autocomplete="current-password" required>
 
                         {{-- Eye Button --}}
                         <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password">
@@ -402,7 +409,7 @@
                         <input type="checkbox" name="remember" value="1">
 
                         <span>
-                            Remember me
+                            {{ __('Remember me') }}
                         </span>
 
                     </label>
@@ -412,7 +419,7 @@
 
                 {{-- Sign In --}}
                 <button type="submit" class="login-button">
-                    Sign In →
+                    {{ __('Sign In') }} →
                 </button>
 
             </form>

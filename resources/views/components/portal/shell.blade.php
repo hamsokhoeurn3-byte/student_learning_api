@@ -7,6 +7,9 @@
     <title>@yield('title', 'SLAS')</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         html,
         body {
@@ -14,7 +17,7 @@
         }
 
         body {
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: 'Kantumruy Pro', Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
         }
 
         .portal-layout {
@@ -280,14 +283,14 @@
                 <img src="{{ asset('slas-logo.png') }}" alt="SLAS - Siem Reap University" class="portal-brand-logo">
                 <span>
                     <strong class="d-block lh-1">SLAS</strong>
-                    <small>{{ $role }}</small>
+                    <small>{{ __($role) }}</small>
                 </span>
             </a>
             <nav class="portal-nav">
                 @foreach ($navItems as $item)
                     <a href="{{ route($item['route']) }}"
                         class="{{ request()->routeIs($item['route']) ? 'active' : '' }}">
-                        <i class="bi bi-{{ $item['icon'] }}"></i><span>{{ $item['label'] }}</span>
+                        <i class="bi bi-{{ $item['icon'] }}"></i><span>{{ __($item['label']) }}</span>
                     </a>
                 @endforeach
             </nav>
@@ -297,7 +300,9 @@
                 <button type="button" class="portal-sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation menu" title="Show/hide navigation">
                     <i class="bi bi-list"></i>
                 </button>
-                <div class="d-flex align-items-center gap-3"><time class="small text-muted text-nowrap" data-live-clock datetime="{{ now()->toIso8601String() }}" aria-label="Local date and time">{{ now()->format('M d, Y h:i:s A') }}</time>
+                <div class="d-flex align-items-center gap-3">
+                    <x-language-switcher />
+                    <time class="small text-muted text-nowrap" data-live-clock datetime="{{ now()->toIso8601String() }}" aria-label="Local date and time">{{ now()->format('M d, Y h:i:s A') }}</time>
                     @php
                         $currentUser = Auth::user();
                         $notificationsRoute = match ($currentUser->role ?? '') {
@@ -339,11 +344,11 @@
                                     <span class="small text-muted text-truncate d-block">{{ $currentUser->email }}</span>
                                 </div>
                             </div>
-                            <div class="small text-muted border-top pt-3 mb-3">{{ ucfirst($currentUser->role) }}{{ $accountIdentifier ? ' ID: ' . $accountIdentifier : '' }}</div>
-                            <a class="btn btn-outline-primary w-100 mb-2" href="{{ route($profileRoute) }}"><i class="bi bi-person-gear me-2"></i>My Account</a>
+                            <div class="small text-muted border-top pt-3 mb-3">{{ __(ucfirst($currentUser->role)) }}{{ $accountIdentifier ? ' ID: ' . $accountIdentifier : '' }}</div>
+                            <a class="btn btn-outline-primary w-100 mb-2" href="{{ route($profileRoute) }}"><i class="bi bi-person-gear me-2"></i>{{ __('My Account') }}</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button class="btn btn-outline-danger w-100" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Sign out</button>
+                                <button class="btn btn-outline-danger w-100" type="submit"><i class="bi bi-box-arrow-right me-2"></i>{{ __('Sign out') }}</button>
                             </form>
                         </div>
                     </details>

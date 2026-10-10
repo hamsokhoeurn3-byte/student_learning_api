@@ -69,7 +69,8 @@ Admins manage the course catalog and configure class assignments separately:
 
 ```bash
 git add .
-git commit -m "Describe your changes"
+git commit -m "Update project"
+git push origin main
 git push
 ```
 

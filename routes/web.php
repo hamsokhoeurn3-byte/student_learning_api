@@ -20,6 +20,13 @@ use App\Models\User;
 
 Route::view('/', 'pages.auth.login')->name('home');
 
+Route::get('/lang/{locale}', function (string $locale) {
+    if (in_array($locale, ['en', 'km'])) {
+        session(['locale' => $locale]);
+    }
+    return back();
+})->name('lang.switch');
+
 /*
 |--------------------------------------------------------------------------
 | Authentication

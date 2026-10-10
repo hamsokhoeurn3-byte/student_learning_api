@@ -11,7 +11,13 @@ class PerformanceRecordController extends Controller
     {
         $query = PerformanceRecord::with(['student.user', 'course', 'semester']);
 
-        if ($request->has('student_id')) {
+        $user = $request->user();
+        if ($user && $user->role === 'student') {
+            if (!$user->student) {
+                return response()->json(['message' => 'Student profile not found.'], 404);
+            }
+            $query->where('student_id', $user->student->id);
+        } elseif ($request->has('student_id')) {
             $query->where('student_id', $request->student_id);
         }
 
@@ -33,6 +39,11 @@ class PerformanceRecordController extends Controller
 
     public function store(Request $request)
     {
+        $user = $request->user();
+        if (!$user || !in_array($user->role, ['admin', 'teacher'])) {
+            return response()->json(['message' => 'Unauthorized action.'], 403);
+        }
+
         $validated = $request->validate([
             'student_id' => 'required|integer|exists:students,id',
             'course_id' => 'required|integer|exists:courses,id',
@@ -71,6 +82,16 @@ class PerformanceRecordController extends Controller
 
     public function show(PerformanceRecord $performanceRecord)
     {
+        $user = request()->user();
+        if ($user && $user->role === 'student') {
+            if (!$user->student) {
+                return response()->json(['message' => 'Student profile not found.'], 404);
+            }
+            if ($performanceRecord->student_id !== $user->student->id) {
+                return response()->json(['message' => 'Unauthorized access.'], 403);
+            }
+        }
+
         return response()->json([
             'message' => 'Performance record retrieved successfully.',
             'data' => $performanceRecord->load(['student.user', 'course', 'semester']),
@@ -79,6 +100,11 @@ class PerformanceRecordController extends Controller
 
     public function update(Request $request, PerformanceRecord $performanceRecord)
     {
+        $user = $request->user();
+        if (!$user || !in_array($user->role, ['admin', 'teacher'])) {
+            return response()->json(['message' => 'Unauthorized action.'], 403);
+        }
+
         $validated = $request->validate([
             'attendance_percentage' => 'nullable|numeric|min:0|max:100',
             'assignment_percentage' => 'nullable|numeric|min:0|max:100',
@@ -98,6 +124,11 @@ class PerformanceRecordController extends Controller
 
     public function destroy(PerformanceRecord $performanceRecord)
     {
+        $user = request()->user();
+        if (!$user || !in_array($user->role, ['admin', 'teacher'])) {
+            return response()->json(['message' => 'Unauthorized action.'], 403);
+        }
+
         $performanceRecord->delete();
 
         return response()->json([

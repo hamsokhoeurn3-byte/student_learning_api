@@ -11,7 +11,13 @@ class GradeController extends Controller
     {
         $query = Grade::with(['student.user', 'course', 'semester']);
 
-        if ($request->has('student_id')) {
+        $user = $request->user();
+        if ($user && $user->role === 'student') {
+            if (!$user->student) {
+                return response()->json(['message' => 'Student profile not found.'], 404);
+            }
+            $query->where('student_id', $user->student->id);
+        } elseif ($request->has('student_id')) {
             $query->where('student_id', $request->student_id);
         }
 
@@ -33,6 +39,11 @@ class GradeController extends Controller
 
     public function store(Request $request)
     {
+        $user = $request->user();
+        if (!$user || !in_array($user->role, ['admin', 'teacher'])) {
+            return response()->json(['message' => 'Unauthorized action.'], 403);
+        }
+
         $validated = $request->validate([
             'student_id' => 'required|integer|exists:students,id',
             'course_id' => 'required|integer|exists:courses,id',
@@ -65,6 +76,16 @@ class GradeController extends Controller
 
     public function show(Grade $grade)
     {
+        $user = request()->user();
+        if ($user && $user->role === 'student') {
+            if (!$user->student) {
+                return response()->json(['message' => 'Student profile not found.'], 404);
+            }
+            if ($grade->student_id !== $user->student->id) {
+                return response()->json(['message' => 'Unauthorized access.'], 403);
+            }
+        }
+
         return response()->json([
             'message' => 'Grade retrieved successfully.',
             'data' => $grade->load(['student.user', 'course', 'semester']),
@@ -73,6 +94,11 @@ class GradeController extends Controller
 
     public function update(Request $request, Grade $grade)
     {
+        $user = $request->user();
+        if (!$user || !in_array($user->role, ['admin', 'teacher'])) {
+            return response()->json(['message' => 'Unauthorized action.'], 403);
+        }
+
         $validated = $request->validate([
             'assignment_score' => 'nullable|numeric|min:0|max:100',
             'quiz_score' => 'nullable|numeric|min:0|max:100',
@@ -95,6 +121,11 @@ class GradeController extends Controller
 
     public function destroy(Grade $grade)
     {
+        $user = request()->user();
+        if (!$user || !in_array($user->role, ['admin', 'teacher'])) {
+            return response()->json(['message' => 'Unauthorized action.'], 403);
+        }
+
         $grade->delete();
 
         return response()->json([

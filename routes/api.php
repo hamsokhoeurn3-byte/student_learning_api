@@ -53,6 +53,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard/student', [DashboardController::class, 'student']);
     Route::get('/dashboard/teacher', [DashboardController::class, 'teacher']);
     Route::get('/dashboard/admin', [DashboardController::class, 'admin']);
+
+    Route::get('/student/attendance', [DashboardController::class, 'studentAttendance']);
+    Route::get('/student/assignments', [DashboardController::class, 'studentAssignments']);
+
+    // Protected Academic Records
+    Route::apiResource('grades', GradeController::class);
+    Route::apiResource('gpa-records', GpaRecordController::class);
+    Route::apiResource('performance-records', PerformanceRecordController::class);
 });
 
 /*
@@ -86,10 +94,7 @@ Route::apiResource('quiz-answers', QuizAnswerController::class);
 Route::apiResource('exams', ExamController::class);
 Route::apiResource('exam-results', ExamResultController::class);
 
-Route::apiResource('grades', GradeController::class);
-Route::apiResource('gpa-records', GpaRecordController::class);
-
-Route::apiResource('performance-records', PerformanceRecordController::class);
+// Note: grades, gpa-records, and performance-records have been moved to the auth:sanctum group
 Route::apiResource('learning-analytics', LearningAnalyticController::class);
 Route::apiResource('predictions', PredictionController::class);
 Route::apiResource('risk-assessments', RiskAssessmentController::class);

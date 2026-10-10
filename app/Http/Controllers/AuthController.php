@@ -198,9 +198,24 @@ class AuthController extends Controller
 
         $token = $user->createToken('api-token')->plainTextToken;
 
+        $user->load(['student', 'teacher', 'admin']);
+
+        $studentId = null;
+        if ($user->student) {
+            $studentId = $user->student->student_code;
+            $user->student_id = $studentId;
+        } elseif ($user->teacher) {
+            $studentId = $user->teacher->teacher_code;
+            $user->teacher_id = $studentId;
+        } elseif ($user->admin) {
+            $studentId = $user->admin->admin_code;
+            $user->admin_id = $studentId;
+        }
+
         return response()->json([
             'message' => 'Login successful.',
             'user' => $user,
+            'student_id' => $studentId ?? $request->login_id,
             'token' => $token,
         ], 200);
     }

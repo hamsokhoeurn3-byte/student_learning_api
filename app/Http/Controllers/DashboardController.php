@@ -16,6 +16,7 @@ use App\Models\RiskAssessment;
 use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\User;
+use App\Models\GpaRecord;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -51,6 +52,26 @@ class DashboardController extends Controller
 
         $recentGrades = Grade::where('student_id', $student->id)->with('course')->latest()->take(5)->get();
 
+        $gpaRecord = GpaRecord::where('student_id', $student->id)->latest('id')->first();
+
+        // Chart Data for Learning Analytics
+        $allAnalytics = LearningAnalytic::where('student_id', $student->id)->orderBy('period_start')->take(6)->get();
+        $chartData = [];
+        $chartLabels = [];
+        foreach ($allAnalytics as $analytic) {
+            $chartLabels[] = \Carbon\Carbon::parse($analytic->period_start)->format('M');
+            $chartData[] = $analytic->overall_performance ?? 0;
+        }
+
+        // Chart Data for Predictions
+        $predictionHistory = Prediction::where('student_id', $student->id)->orderBy('prediction_date')->take(6)->get();
+        $predChartLabels = [];
+        $predChartData = [];
+        foreach ($predictionHistory as $pred) {
+            $predChartLabels[] = \Carbon\Carbon::parse($pred->prediction_date)->format('M');
+            $predChartData[] = $pred->predicted_score ?? 0;
+        }
+
         return response()->json([
             'message' => 'Student dashboard retrieved successfully.',
             'data' => [
@@ -62,7 +83,82 @@ class DashboardController extends Controller
                 'recommendations' => $recommendations,
                 'notifications' => $notifications,
                 'recent_grades' => $recentGrades,
+                'gpa' => $gpaRecord ? $gpaRecord->gpa : null,
+                'gpa_record' => $gpaRecord,
+                'chart_data' => $chartData,
+                'chart_labels' => $chartLabels,
+                'prediction_chart_data' => $predChartData,
+                'prediction_chart_labels' => $predChartLabels,
             ],
+        ], 200);
+    }
+
+    public function studentAttendance(Request $request)
+    {
+        $user = $request->user();
+        $student = $user?->student;
+
+        if (! $student) {
+            return response()->json(['message' => 'Student profile not found.'], 404);
+        }
+
+        $details = \App\Models\AttendanceDetail::with(['attendance.course', 'attendance.teacher.user'])
+            ->where('student_id', $student->id)
+            ->latest()
+            ->get();
+
+        // Calculate attendance summary
+        $totalClasses = $details->count();
+        $presentCount = $details->where('status', 'present')->count();
+        $absentCount = $details->where('status', 'absent')->count();
+        $lateCount = $details->where('status', 'late')->count();
+        $excusedCount = $details->where('status', 'excused')->count();
+
+        return response()->json([
+            'message' => 'Student attendance retrieved successfully.',
+            'data' => [
+                'details' => $details,
+                'summary' => [
+                    'total' => $totalClasses,
+                    'present' => $presentCount,
+                    'absent' => $absentCount,
+                    'late' => $lateCount,
+                    'excused' => $excusedCount,
+                    'percentage' => $totalClasses > 0 ? round(($presentCount / $totalClasses) * 100, 2) : 0
+                ]
+            ],
+        ], 200);
+    }
+
+    public function studentAssignments(Request $request)
+    {
+        $user = $request->user();
+        $student = $user?->student;
+
+        if (! $student) {
+            return response()->json(['message' => 'Student profile not found.'], 404);
+        }
+
+        $assignments = \App\Models\Assignment::with([
+            'course',
+            'submissions' => function ($query) use ($student) {
+                $query->where('student_id', $student->id);
+            },
+            'attempts' => function ($query) use ($student) {
+                $query->where('student_id', $student->id)->orderByDesc('attempt_number');
+            }
+        ])
+            ->where('status', 'published')
+            ->whereHas('course.students', function ($query) use ($student) {
+                $query->where('students.id', $student->id)
+                      ->where('course_enrollments.status', 'enrolled');
+            })
+            ->orderBy('due_date')
+            ->get();
+
+        return response()->json([
+            'message' => 'Student assignments retrieved successfully.',
+            'data' => $assignments,
         ], 200);
     }
 

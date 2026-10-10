@@ -79,13 +79,15 @@
 
                 <div class="card-body p-4">
 
-                    <h2 class="h5 fw-bold mb-1">
+                    <h2 class="h5 fw-bold mb-3">
                         Academic records
                     </h2>
 
-                    <p class="text-muted small mb-0">
-                        No grade, attendance, course, or assignment records are available yet.
-                    </p>
+                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">Enrolled courses</span><strong>{{ $enrolledCourseCount }}</strong></div>
+                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">Overall GPA</span><strong>{{ $gpaSummary['gpa'] !== null ? number_format($gpaSummary['gpa'], 2) : '—' }}</strong></div>
+                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">Credits earned</span><strong>{{ $gpaSummary['credits'] }}</strong></div>
+                    <div class="d-flex justify-content-between small mb-2"><span class="text-muted">Attendance rate</span><strong>{{ $attendanceSummary['rate'] !== null ? $attendanceSummary['rate'] . '%' : '—' }}</strong></div>
+                    <div class="d-flex justify-content-between small"><span class="text-muted">Academic standing</span><strong>{{ $gpaSummary['standing'] ? ucfirst($gpaSummary['standing']) : '—' }}</strong></div>
 
                 </div>
 
@@ -100,13 +102,28 @@
 
                 <div class="card-body p-4">
 
-                    <h2 class="h5 fw-bold mb-1">
+                    <h2 class="h5 fw-bold mb-3">
                         Recent activity
                     </h2>
 
-                    <p class="text-muted small mb-0">
-                        No activity records are available yet.
-                    </p>
+                    @forelse($recentAttempts as $attempt)
+                        <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                            <div>
+                                <strong class="small d-block">{{ $attempt->assignment?->title ?? 'Deleted assignment' }}</strong>
+                                <small class="text-muted">{{ $attempt->assignment?->course?->name ?? 'Course unavailable' }}</small>
+                            </div>
+                            <div class="text-end">
+                                @if($attempt->score !== null)
+                                    <span class="badge bg-success-subtle text-success">{{ number_format((float) $attempt->score, 0) }}%</span>
+                                @else
+                                    <span class="badge bg-secondary-subtle text-secondary">Awaiting</span>
+                                @endif
+                                <small class="d-block text-muted">{{ $attempt->submitted_at?->diffForHumans() }}</small>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-muted small mb-0">No activity records are available yet.</p>
+                    @endforelse
 
                 </div>
 
@@ -141,13 +158,7 @@
                     </div>
 
 
-                    @foreach([
-                        ['Data Structures', 90],
-                        ['Database Systems', 85],
-                        ['Web Development', 80],
-                        ['Computer Networks', 75],
-                        ['Software Engineering', 70],
-                    ] as $subject)
+                    @forelse($subjectPerformance as $subject)
 
                         <div class="d-flex align-items-center mb-4">
 
@@ -155,7 +166,7 @@
                                 style="width:145px;"
                                 class="small fw-semibold"
                             >
-                                {{ $subject[0] }}
+                                {{ $subject['name'] }}
                             </div>
 
                             <div
@@ -164,7 +175,7 @@
                             >
                                 <div
                                     class="progress-bar bg-primary"
-                                    style="width:{{ $subject[1] }}%"
+                                    style="width:{{ $subject['score'] }}%"
                                 ></div>
                             </div>
 
@@ -172,12 +183,18 @@
                                 class="small ms-3 text-end"
                                 style="width:35px;"
                             >
-                                {{ $subject[1] }}%
+                                {{ $subject['score'] }}%
                             </div>
 
                         </div>
 
-                    @endforeach
+                    @empty
+
+                        <p class="text-muted small mb-0">
+                            No graded subjects yet. Your subject performance will appear here once grades are recorded.
+                        </p>
+
+                    @endforelse
 
                 </div>
 

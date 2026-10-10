@@ -39,7 +39,7 @@
                             <div class="col-md-6"><label class="form-label small fw-semibold">Nationality</label><input class="form-control" value="{{ $studentProfile?->nationality ?? 'Not set' }}" readonly></div>
                             <div class="col-md-6"><label class="form-label small fw-semibold">Phone</label><input class="form-control" value="{{ $studentProfile?->phone ?? 'Not set' }}" readonly></div>
                             <div class="col-md-6"><label class="form-label small fw-semibold">Address</label><input class="form-control" value="{{ $studentProfile?->address ?? 'Not set' }}" readonly></div>
-                            <div class="col-md-6"><label class="form-label small fw-semibold">Department</label><input class="form-control" value="{{ $studentProfile?->department ?? 'Not set' }}" readonly></div>
+                            <div class="col-md-6"><label class="form-label small fw-semibold">Department</label><input class="form-control" value="{{ $studentProfile?->department?->name ?? 'Not set' }}" readonly></div>
                             <div class="col-md-6"><label class="form-label small fw-semibold">Major</label><input class="form-control" value="{{ $studentProfile?->major ?? 'Not set' }}" readonly></div>
                             <div class="col-md-6"><label class="form-label small fw-semibold">Year level</label><input class="form-control" value="{{ $studentProfile?->year_level ?? 'Not set' }}" readonly></div>
                             <div class="col-md-6"><label class="form-label small fw-semibold">Semester</label><input class="form-control" value="{{ $studentProfile?->semester ?? 'Not set' }}" readonly></div>

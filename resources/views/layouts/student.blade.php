@@ -82,6 +82,43 @@
 
 
         /* =====================================================
+            SIDEBAR TOGGLE
+        ===================================================== */
+
+        .portal-sidebar-toggle {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            display: inline-grid;
+            place-items: center;
+            border: 1px solid #e4e7ec;
+            border-radius: 10px;
+            color: #566075;
+            background: #fff;
+            font-size: 1.15rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: background .15s ease, color .15s ease, border-color .15s ease;
+        }
+
+        .portal-sidebar-toggle:hover {
+            color: #6d28d9;
+            background: #f1ebff;
+            border-color: #d8c9ff;
+        }
+
+        .portal-sidebar-toggle:focus-visible {
+            outline: 2px solid #7c3aed;
+            outline-offset: 2px;
+        }
+
+        /* Collapsed state: hide the sidebar entirely */
+        .student-layout.nav-collapsed .student-sidebar {
+            display: none;
+        }
+
+
+        /* =====================================================
            LOGO
         ===================================================== */
 
@@ -629,6 +666,28 @@
     </div>
 
 
+    <script>
+        (function () {
+            var toggle = document.getElementById('sidebarToggle');
+            var layout = document.querySelector('.student-layout');
+            if (!toggle || !layout) {
+                return;
+            }
+
+            try {
+                if (localStorage.getItem('slas-nav-collapsed') === '1') {
+                    layout.classList.add('nav-collapsed');
+                }
+            } catch (e) {}
+
+            toggle.addEventListener('click', function () {
+                var collapsed = layout.classList.toggle('nav-collapsed');
+                try {
+                    localStorage.setItem('slas-nav-collapsed', collapsed ? '1' : '0');
+                } catch (e) {}
+            });
+        })();
+    </script>
     @stack('scripts')
 
 </body>

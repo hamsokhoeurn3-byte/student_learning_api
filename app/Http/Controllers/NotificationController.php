@@ -3,90 +3,78 @@
 namespace App\Http\Controllers;
 
 use App\Models\Notification;
-use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\View\View;
 
+/**
+ * Shared notifications inbox for every role (student, teacher, admin).
+ * Notifications are keyed by user_id, so the same logic works for anyone.
+ */
 class NotificationController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Show the notifications inbox for the authenticated user, rendered with
+     * the layout that matches their role.
+     */
+    public function index(): View
     {
-        $userId = $request->user()?->id ?? $request->query('user_id');
+        $userId = Auth::id();
 
-        $query = Notification::query();
+        $notifications = Notification::where('user_id', $userId)
+            ->latest()
+            ->paginate(15);
 
-        if ($userId) {
-            $query->where('user_id', $userId);
-        }
+        $all = Notification::where('user_id', $userId)->get();
 
-        if ($request->has('is_read')) {
-            $query->where('is_read', filter_var($request->is_read, FILTER_VALIDATE_BOOLEAN));
-        }
+        $summary = [
+            'total' => $all->count(),
+            'unread' => $all->where('is_read', false)->count(),
+            'academic' => $all->filter(fn (Notification $n) => in_array($n->type, ['assignment', 'quiz', 'grade'], true))->count(),
+            'system' => $all->filter(fn (Notification $n) => in_array($n->type, ['system', 'attendance', 'course'], true))->count(),
+        ];
 
-        $notifications = $query->latest()->get();
+        $view = match (Auth::user()->role) {
+            'admin' => 'pages.admin.notifications.index',
+            'teacher' => 'pages.teacher.notifications.index',
+            default => 'pages.student.notifications.index',
+        };
 
-        return response()->json([
-            'message' => 'Notifications retrieved successfully.',
-            'data' => $notifications,
-        ], 200);
+        return view($view, [
+            'notifications' => $notifications,
+            'summary' => $summary,
+            'readAllRoute' => $this->readAllRoute(),
+        ]);
     }
 
-    public function store(Request $request)
+    /**
+     * Mark every unread notification for the current user as read.
+     */
+    public function markAllRead(): RedirectResponse
     {
-        $validated = $request->validate([
-            'user_id' => 'required|integer|exists:users,id',
-            'title' => 'required|string|max:200',
-            'message' => 'required|string',
-            'type' => 'nullable|string|max:30',
-            'reference_type' => 'nullable|string|max:50',
-            'reference_id' => 'nullable|integer',
-        ]);
+        Notification::where('user_id', Auth::id())
+            ->where('is_read', false)
+            ->update(['is_read' => true, 'read_at' => now()]);
 
-        $notification = Notification::create([
-            'user_id' => $validated['user_id'],
-            'title' => $validated['title'],
-            'message' => $validated['message'],
-            'type' => $validated['type'] ?? 'system',
-            'reference_type' => $validated['reference_type'] ?? null,
-            'reference_id' => $validated['reference_id'] ?? null,
-            'is_read' => false,
-        ]);
-
-        return response()->json([
-            'message' => 'Notification created successfully.',
-            'data' => $notification,
-        ], 201);
+        return redirect()->route($this->indexRoute())
+            ->with('status', 'All notifications marked as read.');
     }
 
-    public function show(Notification $notification)
+    private function indexRoute(): string
     {
-        return response()->json([
-            'message' => 'Notification retrieved successfully.',
-            'data' => $notification,
-        ], 200);
+        return match (Auth::user()->role) {
+            'admin' => 'admin.notifications',
+            'teacher' => 'teacher.notifications',
+            default => 'student.notifications',
+        };
     }
 
-    public function update(Request $request, Notification $notification)
+    private function readAllRoute(): string
     {
-        $validated = $request->validate([
-            'is_read' => 'required|boolean',
-        ]);
-
-        $notification->update([
-            'is_read' => $validated['is_read'],
-            'read_at' => $validated['is_read'] ? now() : null,
-        ]);
-
-        return response()->json([
-            'message' => 'Notification updated successfully.',
-            'data' => $notification->fresh(),
-        ], 200);
-    }
-
-    public function destroy(Notification $notification)
-    {
-        $notification->delete();
-
-        return response()->json([
-            'message' => 'Notification deleted successfully.',
-        ], 200);
+        return match (Auth::user()->role) {
+            'admin' => 'admin.notifications.read-all',
+            'teacher' => 'teacher.notifications.read-all',
+            default => 'student.notifications.read-all',
+        };
     }
 }

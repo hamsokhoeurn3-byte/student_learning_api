@@ -11,7 +11,7 @@
     $displayName = $fullName !== '' ? $fullName : ($user->name ?? 'Student');
     $initials = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $displayName), 0, 2) ?: 'ST');
     $studentId = $student->student_id ?? 'N/A';
-    $department = $student->department ?? 'Not assigned';
+    $department = $student->department?->name ?? 'Not assigned';
     $major = $student->major ?? 'Not assigned';
     $yearLevel = $student->year_level ?? 'N/A';
     $semester = $student->semester ?? 'N/A';

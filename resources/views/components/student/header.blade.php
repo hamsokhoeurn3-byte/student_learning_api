@@ -1,4 +1,7 @@
 <header class="student-global-header">
+    <button type="button" class="portal-sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation menu" title="Show/hide navigation">
+        <i class="bi bi-list"></i>
+    </button>
     <form class="student-search" method="GET" action="{{ route('student.search') }}" role="search">
         <i class="bi bi-search" aria-hidden="true"></i>
         <label class="visually-hidden" for="studentGlobalSearch">Search courses, assignments, and quizzes</label>
@@ -6,7 +9,11 @@
     </form>
     <div class="d-flex align-items-center gap-3">
         <time class="d-none d-md-inline small text-muted text-nowrap" data-live-clock datetime="{{ now()->toIso8601String() }}" aria-label="Local date and time"><i class="bi bi-calendar3 me-1"></i>{{ now()->format('M d, Y h:i:s A') }}</time>
-        <button class="student-header-icon" aria-label="Notifications"><i class="bi bi-bell"></i><span></span></button>
+        @php $unreadCount = \App\Models\Notification::where('user_id', Auth::id())->where('is_read', false)->count(); @endphp
+        <a href="{{ route('student.notifications') }}" class="student-header-icon position-relative" aria-label="Notifications" title="Notifications">
+            <i class="bi bi-bell"></i>
+            @if($unreadCount > 0)<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>@endif
+        </a>
         <details class="student-profile-menu">
             <summary class="student-header-user text-decoration-none">
                 <span class="d-none d-sm-block text-end"><strong>{{ Auth::user()->name ?? 'Student' }}</strong><small>Student</small></span>

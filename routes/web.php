@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\StudentAssignmentController;
+use App\Http\Controllers\StudentPortalController;
 use App\Models\Attendance;
 use App\Models\Assignment;
 use App\Models\AssignmentAttempt;
@@ -45,11 +46,7 @@ Route::prefix('student')
     ->middleware(['auth', 'role:student'])
     ->group(function () {
 
-        Route::get('/dashboard', function () {
-            return view('pages.student.dashboard', [
-                'studentProfile' => Student::where('user_id', Auth::id())->first(),
-            ]);
-        })->name('student.dashboard');
+        Route::get('/dashboard', [StudentPortalController::class, 'dashboard'])->name('student.dashboard');
 
         Route::get('/profile', function () {
             $student = Student::where('user_id', Auth::id())->first();
@@ -69,22 +66,11 @@ Route::prefix('student')
 
 
 
-        Route::get('/attendance', function () {
-            return view('pages.student.attendance.index');
-        })->name('student.attendance');
+        Route::get('/attendance', [StudentPortalController::class, 'attendance'])->name('student.attendance');
 
         Route::get('/assignments', [StudentAssignmentController::class, 'index'])->name('student.assignments');
         Route::get('/assignments/{assignment}/submit', [StudentAssignmentController::class, 'take'])->name('student.assignments.submit');
         Route::post('/assignments/{assignment}/submit', [StudentAssignmentController::class, 'submit'])->name('student.assignments.store');
-
-
-        // Continue Assignment
-        Route::get('/assignments/{assignment}/continue', function ($assignment) {
-            return view('pages.student.assignments.continue', [
-                'assignment' => $assignment
-            ]);
-        })->name('student.assignments.continue');
-
 
         // View Assignment Result
         Route::get('/assignments/{assignment}/result', [StudentAssignmentController::class, 'result'])->name('student.assignments.result');
@@ -180,9 +166,7 @@ Route::prefix('student')
             ]);
         })->name('student.grades');
 
-        Route::get('/analytics', function () {
-            return view('pages.student.analytics.index');
-        })->name('student.analytics');
+        Route::get('/analytics', [StudentPortalController::class, 'analytics'])->name('student.analytics');
 
         Route::get('/courses', function () {
             $student = Student::where('user_id', Auth::id())->first();
@@ -196,17 +180,12 @@ Route::prefix('student')
             return view('pages.student.courses.index', compact('courses', 'assignments'));
         })->name('student.courses');
 
-        Route::get('/calendar', function () {
-            return view('pages.student.calendar.index');
-        })->name('student.calendar');
+        Route::get('/calendar', [StudentPortalController::class, 'calendar'])->name('student.calendar');
 
-        Route::get('/notifications', function () {
-            return view('pages.student.notifications.index');
-        })->name('student.notifications');
+        Route::get('/notifications', [StudentPortalController::class, 'notifications'])->name('student.notifications');
+        Route::post('/notifications/read-all', [StudentPortalController::class, 'markAllNotificationsRead'])->name('student.notifications.read-all');
 
-        Route::get('/reports', function () {
-            return view('pages.student.reports.index');
-        })->name('student.reports');
+        Route::get('/reports', [StudentPortalController::class, 'reports'])->name('student.reports');
 
         Route::view('/settings', 'pages.student.settings.index')->name('student.settings');
         Route::post('/settings/profile', [AuthController::class, 'updateProfile'])
@@ -882,6 +861,9 @@ Route::prefix('teacher')
                 'assignmentEventCount' => $assignmentEventCount,
             ]);
         })->name('teacher.calendar');
+        Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('teacher.notifications');
+        Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('teacher.notifications.read-all');
+
         Route::get('/reports', function () use ($buildTeacherReport) {
             return view('pages.teacher.reports.index', $buildTeacherReport());
         })->name('teacher.reports');
@@ -941,11 +923,11 @@ Route::prefix('admin')
         })->name('admin.dashboard');
 
         Route::get('/students', function () {
-            $managementRows = Student::with('user')->latest()->paginate(10)
+            $managementRows = Student::with('user', 'department')->latest()->paginate(10)
                 ->through(fn (Student $student) => [
                     $student->user?->name ?? trim($student->first_name . ' ' . $student->last_name),
                     $student->student_id,
-                    $student->department ?? 'Not set',
+                    $student->department?->name ?? 'Not set',
                     ucfirst($student->status),
                     $student->id,
                 ]);
@@ -999,11 +981,11 @@ Route::prefix('admin')
         Route::delete('/students/{student}', [\App\Http\Controllers\AdminPeopleController::class, 'destroyStudent'])->name('admin.students.destroy');
 
         Route::get('/teachers', function () {
-            $managementRows = Teacher::with('user')->latest()->paginate(10)
+            $managementRows = Teacher::with('user', 'department')->latest()->paginate(10)
                 ->through(fn (Teacher $teacher) => [
                     $teacher->user?->name ?? trim($teacher->first_name . ' ' . $teacher->last_name),
                     $teacher->teacher_id,
-                    $teacher->department ?? $teacher->specialization ?? 'Not set',
+                    $teacher->department?->name ?? $teacher->specialization ?? 'Not set',
                     ucfirst($teacher->status),
                     $teacher->id,
                 ]);
@@ -1055,11 +1037,11 @@ Route::prefix('admin')
         Route::delete('/teachers/{teacher}', [\App\Http\Controllers\AdminPeopleController::class, 'destroyTeacher'])->name('admin.teachers.destroy');
 
         Route::get('/courses', function () {
-            $managementRows = Course::latest()->paginate(10)
+            $managementRows = Course::with('department')->latest()->paginate(10)
                 ->through(fn (Course $course) => [
                     $course->name,
                     $course->code,
-                    trim(($course->department ?? 'Department not set') . ($course->credits ? ' · ' . $course->credits . ' credits' : '')),
+                    trim(($course->department?->name ?? 'Department not set') . ($course->credits ? ' · ' . $course->credits . ' credits' : '')),
                     ucfirst($course->status),
                     $course->id,
                 ]);
@@ -1287,6 +1269,10 @@ Route::prefix('admin')
                 'managementCount' => 0,
             ]);
         })->name('admin.reports');
+
+        Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('admin.notifications');
+        Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('admin.notifications.read-all');
+
         Route::view('/settings', 'pages.admin.settings.index')->name('admin.settings');
         Route::post('/settings/profile', [AuthController::class, 'updateProfile'])
             ->name('admin.profile.update');

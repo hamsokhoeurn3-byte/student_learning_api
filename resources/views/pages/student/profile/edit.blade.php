@@ -123,7 +123,7 @@
                                 <label class="form-label fw-semibold">Department</label>
                                 <div class="input-group">
                                     <span class="input-group-text bg-white"><i class="bi bi-building text-primary"></i></span>
-                                    <input type="text" class="form-control" value="{{ $student->department ?? '' }}" readonly>
+                                    <input type="text" class="form-control" value="{{ $student->department?->name ?? '' }}" readonly>
                                 </div>
                             </div>
 

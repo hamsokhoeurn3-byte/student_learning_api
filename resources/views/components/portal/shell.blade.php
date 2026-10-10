@@ -192,6 +192,37 @@
             padding: 0 30px;
         }
 
+        .portal-sidebar-toggle {
+            width: 42px;
+            height: 42px;
+            display: inline-grid;
+            place-items: center;
+            border: 1px solid #e4e7ec;
+            border-radius: 10px;
+            color: #566075;
+            background: #fff;
+            font-size: 1.15rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: background .15s ease, color .15s ease, border-color .15s ease;
+        }
+
+        .portal-sidebar-toggle:hover {
+            color: #6d28d9;
+            background: #f1ebff;
+            border-color: #d8c9ff;
+        }
+
+        .portal-sidebar-toggle:focus-visible {
+            outline: 2px solid #7c3aed;
+            outline-offset: 2px;
+        }
+
+        /* Collapsed state: hide the sidebar entirely */
+        .portal-layout.nav-collapsed .portal-sidebar {
+            display: none;
+        }
+
         .portal-content {
             padding: 28px 30px 36px;
         }
@@ -262,11 +293,19 @@
             </nav>
         </aside>
         <section class="portal-main">
-            <header class="portal-header justify-content-end">
-                <div class="d-flex align-items-center gap-3"><time class="small text-muted text-nowrap" data-live-clock datetime="{{ now()->toIso8601String() }}" aria-label="Local date and time">{{ now()->format('M d, Y h:i:s A') }}</time><button class="btn btn-light rounded-circle"><i
-                            class="bi bi-bell"></i></button>
+            <header class="portal-header justify-content-between">
+                <button type="button" class="portal-sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation menu" title="Show/hide navigation">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="d-flex align-items-center gap-3"><time class="small text-muted text-nowrap" data-live-clock datetime="{{ now()->toIso8601String() }}" aria-label="Local date and time">{{ now()->format('M d, Y h:i:s A') }}</time>
                     @php
                         $currentUser = Auth::user();
+                        $notificationsRoute = match ($currentUser->role ?? '') {
+                            'admin' => 'admin.notifications',
+                            'teacher' => 'teacher.notifications',
+                            default => 'student.notifications',
+                        };
+                        $unreadCount = \App\Models\Notification::where('user_id', Auth::id())->where('is_read', false)->count();
                         $accountIdentifier = match ($currentUser->role) {
                             'student' => $currentUser->student?->student_id,
                             'teacher' => $currentUser->teacher?->teacher_id,
@@ -274,6 +313,10 @@
                             default => null,
                         };
                     @endphp
+                    <a href="{{ route($notificationsRoute) }}" class="btn btn-light rounded-circle position-relative" title="Notifications" aria-label="Notifications">
+                        <i class="bi bi-bell"></i>
+                        @if($unreadCount > 0)<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>@endif
+                    </a>
                     <details class="portal-profile-menu">
                         <summary class="portal-avatar portal-profile-link" aria-label="Open account details" title="Account details">
                             @if ($currentUser->profile_picture_url)
@@ -313,6 +356,29 @@
             </footer>
         </section>
     </div>
+    <script>
+        (function () {
+            var toggle = document.getElementById('sidebarToggle');
+            var layout = document.querySelector('.portal-layout');
+            if (!toggle || !layout) {
+                return;
+            }
+
+            // Restore the last state so the choice persists across page loads.
+            try {
+                if (localStorage.getItem('slas-nav-collapsed') === '1') {
+                    layout.classList.add('nav-collapsed');
+                }
+            } catch (e) {}
+
+            toggle.addEventListener('click', function () {
+                var collapsed = layout.classList.toggle('nav-collapsed');
+                try {
+                    localStorage.setItem('slas-nav-collapsed', collapsed ? '1' : '0');
+                } catch (e) {}
+            });
+        })();
+    </script>
     @stack('scripts')
 </body>
 

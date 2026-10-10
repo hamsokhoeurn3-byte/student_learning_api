@@ -15,13 +15,13 @@ class AdminPeopleController extends Controller
 {
     public function showStudent(Student $student): View
     {
-        $student->load('user');
+        $student->load('user', 'department');
 
         return $this->showRecord('Student', $student, [
             'Student ID' => $student->student_id,
             'Name' => $student->user?->name ?? trim($student->first_name . ' ' . $student->last_name),
             'Email' => $student->user?->email ?? 'Not set',
-            'Department' => $student->department,
+            'Department' => $student->department?->name ?? 'Not set',
             'Major' => $student->major,
             'Academic year' => $student->academic_year,
             'Year level' => $student->year_level,
@@ -33,7 +33,7 @@ class AdminPeopleController extends Controller
 
     public function editStudent(Student $student): View
     {
-        $student->load('user');
+        $student->load('user', 'department');
 
         return $this->editRecord('Student', $student, route('admin.students.update', $student), route('admin.students'), [
             $this->field('Student ID', 'student_id', $student->student_id, true),
@@ -42,7 +42,7 @@ class AdminPeopleController extends Controller
             $this->field('Email', 'email', $student->user?->email, true, 'email'),
             $this->field('Date of birth', 'date_of_birth', $student->date_of_birth, true, 'date'),
             $this->field('Gender', 'gender', $student->gender, true, 'select', ['Male', 'Female']),
-            $this->field('Department', 'department', $student->department),
+            $this->field('Department', 'department', $student->department?->name),
             $this->field('Major', 'major', $student->major),
             $this->field('Academic year', 'academic_year', $student->academic_year),
             $this->field('Year level', 'year_level', $student->year_level),
@@ -108,13 +108,13 @@ class AdminPeopleController extends Controller
 
     public function showTeacher(Teacher $teacher): View
     {
-        $teacher->load('user');
+        $teacher->load('user', 'department');
 
         return $this->showRecord('Teacher', $teacher, [
             'Teacher ID' => $teacher->teacher_id,
             'Name' => $teacher->user?->name ?? trim($teacher->first_name . ' ' . $teacher->last_name),
             'Email' => $teacher->user?->email ?? 'Not set',
-            'Department' => $teacher->department,
+            'Department' => $teacher->department?->name ?? 'Not set',
             'Position' => $teacher->position,
             'Specialization' => $teacher->specialization,
             'Phone' => $teacher->phone,
@@ -124,14 +124,14 @@ class AdminPeopleController extends Controller
 
     public function editTeacher(Teacher $teacher): View
     {
-        $teacher->load('user');
+        $teacher->load('user', 'department');
 
         return $this->editRecord('Teacher', $teacher, route('admin.teachers.update', $teacher), route('admin.teachers'), [
             $this->field('Teacher ID', 'teacher_id', $teacher->teacher_id, true),
             $this->field('First name', 'first_name', $teacher->first_name, true),
             $this->field('Last name', 'last_name', $teacher->last_name, true),
             $this->field('Email', 'email', $teacher->user?->email, true, 'email'),
-            $this->field('Department', 'department', $teacher->department),
+            $this->field('Department', 'department', $teacher->department?->name),
             $this->field('Position', 'position', $teacher->position),
             $this->field('Specialization', 'specialization', $teacher->specialization),
             $this->field('Date of birth', 'date_of_birth', $teacher->date_of_birth, false, 'date'),

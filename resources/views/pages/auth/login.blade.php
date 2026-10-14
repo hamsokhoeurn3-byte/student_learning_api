@@ -15,27 +15,45 @@
     <style>
         body {
             min-height: 100vh;
-            background: #dcecff url('{{ asset('bg.png') }}') center / cover no-repeat fixed;
+            min-height: 100dvh;
+            background-color: #dcecff;
+            background-image: url('{{ asset('bg.png') }}');
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center center;
+            background-attachment: fixed;
             font-family: 'Kantumruy Pro', Inter, Arial, Helvetica, sans-serif;
         }
 
         .login-wrapper {
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 24px 15px;
-            background: rgba(255, 255, 255, 0.16);
+            padding: 30px 16px;
+            background: rgba(255, 255, 255, 0.12);
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        .login-lang-switch {
+            position: fixed;
+            top: 18px;
+            right: 20px;
+            z-index: 100;
         }
 
         .login-card {
             width: 100%;
-            max-width: 405px;
+            max-width: 410px;
             background: #ffffff;
             border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
-            padding: 34px 40px 36px;
+            border-radius: 14px;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+            padding: 34px 38px 36px;
+            box-sizing: border-box;
+            margin: auto 0;
         }
 
         .login-logo {
@@ -292,27 +310,55 @@
         |--------------------------------------------------------------------------
         */
 
+        /* When screen is narrower or aspect ratio < 16/10: frame temple and push left artwork text off-screen cleanly */
+        @media (max-width: 1250px), (max-aspect-ratio: 16/10) {
+            body {
+                background-position: 85% center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                background-position: 80% center;
+                background-attachment: scroll;
+            }
+
+            .login-wrapper {
+                padding: 65px 16px 30px;
+            }
+        }
+
         @media (max-width: 576px) {
+            .login-wrapper {
+                padding: 60px 14px 20px;
+            }
 
             .login-card {
-                padding: 28px 22px 30px;
+                padding: 26px 18px 28px;
+                border-radius: 14px;
             }
 
-            .brand-title {
-                font-size: 38px;
+            .login-logo {
+                width: min(100%, 170px);
+                margin-bottom: 10px;
             }
 
-            .subtitle {
-                font-size: 18px;
+            .description {
+                font-size: 12px;
+                margin-bottom: 20px;
             }
 
+            .login-lang-switch {
+                top: 12px;
+                right: 14px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <div style="position: absolute; top: 18px; right: 20px; z-index: 100;">
+    <div class="login-lang-switch">
         <x-language-switcher />
     </div>
 

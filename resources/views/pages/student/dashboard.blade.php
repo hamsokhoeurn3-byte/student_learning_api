@@ -163,8 +163,9 @@
                         <div class="d-flex align-items-center mb-4">
 
                             <div
-                                style="width:145px;"
-                                class="small fw-semibold"
+                                style="width: min(140px, 35%);"
+                                class="small fw-semibold text-truncate pe-2"
+                                title="{{ $subject['name'] }}"
                             >
                                 {{ $subject['name'] }}
                             </div>

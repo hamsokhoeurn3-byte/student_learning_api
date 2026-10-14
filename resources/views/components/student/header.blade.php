@@ -2,11 +2,11 @@
     <button type="button" class="portal-sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation menu" title="Show/hide navigation">
         <i class="bi bi-list"></i>
     </button>
-    <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center gap-2 gap-sm-3">
         <x-language-switcher />
         <time class="d-none d-md-inline small text-muted text-nowrap" data-live-clock datetime="{{ now()->toIso8601String() }}" aria-label="Local date and time"><i class="bi bi-calendar3 me-1"></i>{{ now()->format('M d, Y h:i:s A') }}</time>
         @php $unreadCount = \App\Models\Notification::where('user_id', Auth::id())->where('is_read', false)->count(); @endphp
-        <a href="{{ route('student.notifications') }}" class="student-header-icon position-relative" aria-label="Notifications" title="Notifications">
+        <a href="{{ route('student.notifications') }}" class="student-header-icon position-relative d-inline-flex align-items-center justify-content-center text-decoration-none" style="width: 42px; height: 42px; font-size: 1.15rem; line-height: 1;" aria-label="Notifications" title="Notifications">
             <i class="bi bi-bell"></i>
             @if($unreadCount > 0)<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>@endif
         </a>

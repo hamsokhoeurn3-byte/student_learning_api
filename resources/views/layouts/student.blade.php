@@ -72,9 +72,9 @@
 
             height: 100vh;
 
-            background: #eaf4ff;
+            background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
 
-            border-right: 1px solid #cfe3f5;
+            border-right: 1px solid #ddd6fe;
 
             display: flex;
             flex-direction: column;
@@ -132,7 +132,7 @@
 
             padding: 28px 20px;
 
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid #ddd6fe;
 
             flex-shrink: 0;
         }
@@ -432,30 +432,151 @@
         ===================================================== */
 
         @media (max-width: 768px) {
+            .student-layout {
+                position: relative;
+            }
 
             .student-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                width: 260px;
+                min-width: 260px;
+                height: 100vh;
+                height: 100dvh;
+                z-index: 1050;
+                box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
+                transform: translateX(0);
+                transition: transform 0.25s ease;
+            }
 
-                width: 220px;
+            .student-layout.nav-collapsed .student-sidebar {
+                display: block !important;
+                transform: translateX(-100%);
+                box-shadow: none;
+            }
 
-                min-width: 220px;
+            .student-content {
+                width: 100%;
             }
 
             .student-logo {
-
                 padding: 20px 14px;
             }
 
             .student-nav {
-
                 padding: 12px 8px;
             }
 
             .student-nav-link {
-
-                font-size: 14px;
-
-                padding: 10px 10px;
+                font-size: 15px;
+                padding: 10px 12px;
             }
+        }
+
+        /* =====================================================
+           PURPLE BRAND HEADER THEME
+        ===================================================== */
+
+        .student-global-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            height: 70px;
+            padding: 0 30px;
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 4px 20px rgba(91, 33, 182, 0.18);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: #ffffff;
+        }
+
+        .student-global-header .portal-sidebar-toggle {
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            display: inline-grid;
+            place-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 10px;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(8px);
+            font-size: 1.15rem;
+            line-height: 1;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .student-global-header .portal-sidebar-toggle:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.28);
+            border-color: rgba(255, 255, 255, 0.45);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .student-global-header .student-header-icon {
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            border-radius: 10px;
+            width: 42px;
+            height: 42px;
+            flex-shrink: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(8px);
+            font-size: 1.15rem;
+            line-height: 1;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .student-global-header .student-header-icon:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.28);
+            border-color: rgba(255, 255, 255, 0.45);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .student-global-header [data-live-clock] {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .student-global-header .student-header-user {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffffff !important;
+            text-decoration: none;
+        }
+
+        .student-global-header .student-header-user strong {
+            color: #ffffff;
+        }
+
+        .student-global-header .student-header-user small {
+            display: block;
+            color: rgba(255, 255, 255, 0.72) !important;
+        }
+
+        .student-global-header .student-header-user b {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: #5b21b6;
+            background: #ffffff;
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            font-weight: 700;
         }
 
     </style>
@@ -680,11 +801,13 @@
                 return;
             }
 
-            try {
-                if (localStorage.getItem('slas-nav-collapsed') === '1') {
-                    layout.classList.add('nav-collapsed');
-                }
-            } catch (e) {}
+            var isMobile = window.innerWidth <= 768;
+            var saved = localStorage.getItem('slas-nav-collapsed');
+
+            // On mobile screen, collapse by default unless user previously explicitly opened it
+            if (saved === '1' || (isMobile && saved === null)) {
+                layout.classList.add('nav-collapsed');
+            }
 
             toggle.addEventListener('click', function () {
                 var collapsed = layout.classList.toggle('nav-collapsed');
@@ -692,6 +815,16 @@
                     localStorage.setItem('slas-nav-collapsed', collapsed ? '1' : '0');
                 } catch (e) {}
             });
+
+            // Tap on content area on mobile closes open drawer
+            var mainContent = document.querySelector('.student-content');
+            if (mainContent) {
+                mainContent.addEventListener('click', function (e) {
+                    if (window.innerWidth <= 768 && !layout.classList.contains('nav-collapsed') && !e.target.closest('#sidebarToggle')) {
+                        layout.classList.add('nav-collapsed');
+                    }
+                });
+            }
         })();
     </script>
     @stack('scripts')

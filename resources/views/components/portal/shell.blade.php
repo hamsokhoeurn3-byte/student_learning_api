@@ -29,8 +29,8 @@
         .portal-sidebar {
             width: 260px;
             min-width: 260px;
-            background: #eaf4ff;
-            border-right: 1px solid #cfe3f5;
+            background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
+            border-right: 1px solid #ddd6fe;
             padding: 28px 14px 14px;
             display: flex;
             flex-direction: column;
@@ -38,7 +38,7 @@
 
         .portal-brand {
             padding: 0 8px 22px;
-            border-bottom: 1px solid #cfe3f5;
+            border-bottom: 1px solid #ddd6fe;
             color: #17203a;
             text-decoration: none;
         }
@@ -272,6 +272,39 @@
             }
         }
 
+        /* =====================================================
+           PURPLE BRAND HEADER THEME
+        ===================================================== */
+
+        .portal-header {
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
+            box-shadow: 0 4px 20px rgba(91, 33, 182, 0.18);
+            color: #ffffff;
+        }
+
+        .portal-header .portal-sidebar-toggle {
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.16);
+            backdrop-filter: blur(8px);
+        }
+
+        .portal-header .portal-sidebar-toggle:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.28);
+            border-color: rgba(255, 255, 255, 0.45);
+        }
+
+        .portal-header [data-live-clock] {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .portal-header .portal-profile-link {
+            border: 2px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
     </style>
     @stack('styles')
 </head>
@@ -300,9 +333,9 @@
                 <button type="button" class="portal-sidebar-toggle" id="sidebarToggle" aria-label="Toggle navigation menu" title="Show/hide navigation">
                     <i class="bi bi-list"></i>
                 </button>
-                <div class="d-flex align-items-center gap-3">
+                <div class="d-flex align-items-center gap-2 gap-sm-3">
                     <x-language-switcher />
-                    <time class="small text-muted text-nowrap" data-live-clock datetime="{{ now()->toIso8601String() }}" aria-label="Local date and time">{{ now()->format('M d, Y h:i:s A') }}</time>
+                    <time class="d-none d-md-inline small text-muted text-nowrap" data-live-clock datetime="{{ now()->toIso8601String() }}" aria-label="Local date and time"><i class="bi bi-calendar3 me-1"></i>{{ now()->format('M d, Y h:i:s A') }}</time>
                     @php
                         $currentUser = Auth::user();
                         $notificationsRoute = match ($currentUser->role ?? '') {
@@ -318,7 +351,7 @@
                             default => null,
                         };
                     @endphp
-                    <a href="{{ route($notificationsRoute) }}" class="btn btn-light rounded-circle position-relative" title="Notifications" aria-label="Notifications">
+                    <a href="{{ route($notificationsRoute) }}" class="portal-sidebar-toggle position-relative text-decoration-none" title="Notifications" aria-label="Notifications">
                         <i class="bi bi-bell"></i>
                         @if($unreadCount > 0)<span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>@endif
                     </a>
@@ -369,12 +402,12 @@
                 return;
             }
 
-            // Restore the last state so the choice persists across page loads.
-            try {
-                if (localStorage.getItem('slas-nav-collapsed') === '1') {
-                    layout.classList.add('nav-collapsed');
-                }
-            } catch (e) {}
+            var isMobile = window.innerWidth <= 768;
+            var saved = localStorage.getItem('slas-nav-collapsed');
+
+            if (saved === '1' || (isMobile && saved === null)) {
+                layout.classList.add('nav-collapsed');
+            }
 
             toggle.addEventListener('click', function () {
                 var collapsed = layout.classList.toggle('nav-collapsed');
@@ -382,6 +415,15 @@
                     localStorage.setItem('slas-nav-collapsed', collapsed ? '1' : '0');
                 } catch (e) {}
             });
+
+            var mainContent = document.querySelector('.portal-main');
+            if (mainContent) {
+                mainContent.addEventListener('click', function (e) {
+                    if (window.innerWidth <= 576 && !layout.classList.contains('nav-collapsed') && !e.target.closest('#sidebarToggle')) {
+                        layout.classList.add('nav-collapsed');
+                    }
+                });
+            }
         })();
     </script>
     @stack('scripts')

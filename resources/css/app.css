@@ -8,25 +8,21 @@
 @theme { --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif; }
 
 :root {
-    --bs-primary: #0f766e;
-    --bs-primary-rgb: 15, 118, 110;
-    --bs-link-color: #0f766e;
-    --bs-link-hover-color: #115e59;
-    --portal-purple: #0f766e;
-    --portal-indigo: #155e75;
-    --portal-lilac: #e6f4f1;
-    --portal-canvas: #f5f8f8;
-    --portal-ink: #183238;
+    --portal-purple: #7c3aed;   /* ← Primary color (buttons, links, active nav) */
+    --portal-indigo: #4f46e5;   /* ← Secondary accent */
+    --portal-lilac:  #f1ebff;   /* ← Light background tint */
+    --portal-canvas: #f7f8ff;   /* ← Page background */
+    --portal-ink:    #1e1b4b;   /* ← Main text color */
 }
 
 body { color: var(--portal-ink); background: var(--portal-canvas); }
-.btn-primary { --bs-btn-bg: var(--portal-purple); --bs-btn-border-color: var(--portal-purple); --bs-btn-hover-bg: #115e59; --bs-btn-hover-border-color: #115e59; --bs-btn-active-bg: #134e4a; --bs-btn-active-border-color: #134e4a; }
-.btn-outline-primary { --bs-btn-color: var(--portal-purple); --bs-btn-border-color: #a8d8d2; --bs-btn-hover-bg: var(--portal-purple); --bs-btn-hover-border-color: var(--portal-purple); }
+.btn-primary { --bs-btn-bg: var(--portal-purple); --bs-btn-border-color: var(--portal-purple); --bs-btn-hover-bg: #5b21b6; --bs-btn-hover-border-color: #5b21b6; --bs-btn-active-bg: #4c1d95; --bs-btn-active-border-color: #4c1d95; }
+.btn-outline-primary { --bs-btn-color: var(--portal-purple); --bs-btn-border-color: #c4b5fd; --bs-btn-hover-bg: var(--portal-purple); --bs-btn-hover-border-color: var(--portal-purple); }
 .text-primary { color: var(--portal-purple) !important; }
 .bg-primary { background-color: var(--portal-purple) !important; }
 .bg-primary-subtle { background-color: var(--portal-lilac) !important; }
 .border-primary { border-color: #cbb8ff !important; }
-.progress-bar { background: linear-gradient(90deg, #14b8a6, #0f766e); }
+.progress-bar { background: linear-gradient(90deg, #818cf8, #7c3aed); }
 .nav-pills { --bs-nav-pills-link-active-bg: var(--portal-purple); }
 .page-item.active .page-link { background-color: var(--portal-purple); border-color: var(--portal-purple); }
 .page-link { color: var(--portal-purple); }
@@ -66,10 +62,11 @@ body { color: var(--portal-ink); background: var(--portal-canvas); }
 .student-timeline-item { position: relative; padding: 0 0 19px; }
 .student-timeline-item:last-child { padding-bottom: 0; }
 .student-timeline-item:before { content: ''; position: absolute; left: -21px; top: 5px; width: 12px; height: 12px; background: #7c3aed; border: 3px solid #f4f0ff; border-radius: 50%; }
-.student-global-header { position: sticky; top: 0; z-index: 30; height: 70px; padding: 0 30px; background: rgba(255,255,255,.94); border-bottom: 1px solid #ebedf5; backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: space-between; }
+.student-global-header { position: sticky; top: 0; z-index: 30; height: 70px; padding: 0 30px; background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 4px 20px rgba(91, 33, 182, 0.18); display: flex; align-items: center; justify-content: space-between; color: #ffffff; }
 .student-search { width: min(370px, 43vw); display: flex; align-items: center; gap: 9px; padding: 9px 12px; border-radius: 10px; color: #98a2b3; background: #f6f7fb; }
 .student-search input { min-width: 0; width: 100%; border: 0; outline: 0; background: transparent; color: #344054; font-size: .83rem; }
-.student-header-icon { position: relative; border: 0; border-radius: 10px; width: 37px; height: 37px; color: #475467; background: #f7f7fb; }
+.student-header-icon { position: relative; border: 1px solid #e4e7ec; border-radius: 10px; width: 42px; height: 42px; display: inline-flex; align-items: center; justify-content: center; color: #566075; background: #fff; font-size: 1.15rem; line-height: 1; text-decoration: none; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+.student-header-icon:hover { color: #6d28d9; background: #f1ebff; border-color: #d8c9ff; }
 .student-header-icon span { position:absolute; width:7px; height:7px; top:8px; right:8px; border:1px solid #fff; border-radius:50%; background:#ef476f; }
 .student-header-user { display:flex; align-items:center; gap:9px; color:#344054; font-size:.78rem; }
 .student-profile-menu { position:relative; }

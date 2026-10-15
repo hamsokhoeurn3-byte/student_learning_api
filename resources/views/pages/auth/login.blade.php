@@ -13,16 +13,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Kantumruy+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        body {
+        body.login-page {
             min-height: 100vh;
             min-height: 100dvh;
-            background-color: #dcecff;
-            background-image: url('{{ asset('bg.png') }}');
-            background-repeat: no-repeat;
-            background-size: cover;
-            background-position: center center;
-            background-attachment: fixed;
+            background-color: #dce6fa;
+            background-image: url('{{ asset('bg.png') }}') !important;
+            background-repeat: no-repeat !important;
+            background-size: cover !important;
+            background-position: center center !important;
+            background-attachment: fixed !important;
             font-family: 'Kantumruy Pro', Inter, Arial, Helvetica, sans-serif;
+            position: relative;
+        }
+
+        /* Decorative waves — top-right & bottom-left (SLAS banner style) */
+        .login-waves {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
         }
 
         .login-wrapper {
@@ -45,6 +56,7 @@
         }
 
         .login-card {
+            z-index: 1;
             width: 100%;
             max-width: 410px;
             background: #ffffff;
@@ -312,15 +324,15 @@
 
         /* When screen is narrower or aspect ratio < 16/10: frame temple and push left artwork text off-screen cleanly */
         @media (max-width: 1250px), (max-aspect-ratio: 16/10) {
-            body {
-                background-position: 85% center;
+            body.login-page {
+                background-position: 85% center !important;
             }
         }
 
         @media (max-width: 768px) {
-            body {
-                background-position: 80% center;
-                background-attachment: scroll;
+            body.login-page {
+                background-position: 80% center !important;
+                background-attachment: scroll !important;
             }
 
             .login-wrapper {
@@ -356,7 +368,7 @@
     </style>
 </head>
 
-<body>
+<body class="login-page">
 
     <div class="login-lang-switch">
         <x-language-switcher />

@@ -393,7 +393,7 @@ git pull origin main
 
 git add .
 git commit -m "Update backend API"
-git push origin main
+git push origin madin
 ```
 
 For the Flutter frontend, open a separate terminal:

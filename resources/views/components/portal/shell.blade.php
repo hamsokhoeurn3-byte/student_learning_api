@@ -21,19 +21,24 @@
         }
 
         .portal-layout {
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
+            overflow: hidden;
             background: #f7f8ff;
         }
 
         .portal-sidebar {
             width: 260px;
             min-width: 260px;
+            height: 100vh;
             background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
             border-right: 1px solid #ddd6fe;
             padding: 28px 14px 14px;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 1000;
+            overflow: hidden;
         }
 
         .portal-brand {
@@ -61,6 +66,9 @@
 
         .portal-nav {
             padding-top: 18px;
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .portal-nav a {
@@ -183,9 +191,24 @@
         .portal-main {
             flex: 1;
             min-width: 0;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
+        .portal-main::-webkit-scrollbar { width: 8px; }
+
+        .portal-main::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .portal-main::-webkit-scrollbar-track { background: transparent; }
+
         .portal-header {
+            position: sticky;
+            top: 0;
+            z-index: 30;
             height: 70px;
             background: rgba(255, 255, 255, .9);
             border-bottom: 1px solid #ebedf5;
@@ -226,15 +249,39 @@
             display: none;
         }
 
+        @media (max-width: 768px) {
+            .portal-layout.nav-collapsed .portal-sidebar {
+                display: block;
+            }
+        }
+
         .portal-content {
             padding: 28px 30px 36px;
         }
 
         @media (max-width: 768px) {
             .portal-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                bottom: 0;
                 width: 68px;
                 min-width: 68px;
-                padding: 16px 8px;
+                height: 100vh;
+                height: 100dvh;
+                z-index: 1050;
+                box-shadow: 4px 0 25px rgba(0, 0, 0, 0.15);
+                transform: translateX(0);
+                transition: transform 0.25s ease;
+            }
+
+            .portal-layout.nav-collapsed .portal-sidebar {
+                transform: translateX(-100%);
+                box-shadow: none;
+            }
+
+            .portal-main {
+                width: 100%;
             }
 
             .portal-brand span,
@@ -262,7 +309,6 @@
             .portal-nav i {
                 width: auto;
             }
-
             .portal-header {
                 padding: 0 16px;
             }

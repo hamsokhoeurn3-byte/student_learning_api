@@ -3,6 +3,7 @@
     'homeRoute' => 'teacher.dashboard',
     'profileRoute' => 'teacher.settings',
     'navItems' => [
+        ['route' => 'teacher.dashboard', 'label' => 'Dashboard', 'icon' => 'speedometer2'],
         ['route' => 'teacher.students', 'label' => 'Students', 'icon' => 'people'],
         ['route' => 'teacher.attendance', 'label' => 'Attendance', 'icon' => 'calendar-check'],
         ['route' => 'teacher.assignments', 'label' => 'Assignments', 'icon' => 'journal-text'],

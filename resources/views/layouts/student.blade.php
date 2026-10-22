@@ -633,6 +633,19 @@
             <nav class="student-nav">
 
 
+                {{-- Dashboard --}}
+
+                <a href="{{ route('student.dashboard') }}"
+                    class="student-nav-link
+                {{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
+
+                    <i class="bi bi-speedometer2"></i>
+
+                    <span>{{ __('Dashboard') }}</span>
+
+                </a>
+
+
                 {{-- Attendance --}}
 
                 <a href="{{ route('student.attendance') }}"

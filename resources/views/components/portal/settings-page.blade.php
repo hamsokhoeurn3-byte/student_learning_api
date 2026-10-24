@@ -1,15 +1,21 @@
 @php
     $isStudent = strtolower($audience ?? '') === 'student';
+    $portalHome = request()->routeIs('payroll.*') ? 'payroll.dashboard'
+        : (request()->routeIs('teacher.*') ? 'teacher.dashboard'
+        : (request()->routeIs('student.*') ? 'student.dashboard' : 'admin.dashboard'));
     $studentProfile = $isStudent ? Auth::user()->student : null;
     $profileRoute = match (strtolower($audience ?? 'admin')) {
         'student' => 'student.profile.update',
         'teacher' => 'teacher.profile.update',
+        'payroll' => 'payroll.profile.update',
         default => 'admin.profile.update',
     };
 @endphp
 
 <div class="mb-4">
-    <div class="small text-primary fw-semibold mb-1">Dashboard <span class="text-muted mx-1">/</span> Settings</div>
+    <div class="small text-primary fw-semibold mb-1">
+        <a href="{{ route($portalHome) }}" class="text-decoration-none">Dashboard</a> <span class="text-muted mx-1">/</span> Settings
+    </div>
     <h1 class="h2 fw-bold mb-1">Settings</h1>
     <p class="text-muted mb-0">Manage your {{ strtolower($audience) }} preferences and account security.</p>
 </div>

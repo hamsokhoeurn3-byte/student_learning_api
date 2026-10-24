@@ -1,4 +1,5 @@
 @include('components.portal.shell', [
+    'theme' => 'default',
     'role' => 'Admin Panel',
     'homeRoute' => 'admin.dashboard',
     'profileRoute' => 'admin.settings',

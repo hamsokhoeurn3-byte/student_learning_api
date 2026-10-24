@@ -1285,3 +1285,45 @@ Route::prefix('admin')
             ->name('admin.profile.update');
     });
 
+
+/*
+|--------------------------------------------------------------------------
+| Payroll Panel
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('payroll')
+    ->middleware(['auth', 'role:payroll'])
+    ->group(function () {
+
+        Route::get('/dashboard', [\App\Http\Controllers\PayrollController::class, 'dashboard'])->name('payroll.dashboard');
+
+        Route::get('/employees', [\App\Http\Controllers\PayrollController::class, 'employees'])->name('payroll.employees');
+        Route::post('/employees', [\App\Http\Controllers\PayrollController::class, 'storeEmployee'])->name('payroll.employees.store');
+        Route::delete('/employees/{salary}', [\App\Http\Controllers\PayrollController::class, 'destroyEmployee'])->name('payroll.employees.destroy');
+
+        Route::get('/salaries', [\App\Http\Controllers\PayrollController::class, 'salaries'])->name('payroll.salaries');
+
+        Route::get('/runs', [\App\Http\Controllers\PayrollController::class, 'runs'])->name('payroll.runs');
+        Route::post('/runs', [\App\Http\Controllers\PayrollController::class, 'storeRun'])->name('payroll.runs.store');
+        Route::get('/runs/{run}', [\App\Http\Controllers\PayrollController::class, 'showRun'])->name('payroll.runs.show');
+        Route::post('/runs/{run}/approve', [\App\Http\Controllers\PayrollController::class, 'approveRun'])->name('payroll.runs.approve');
+        Route::post('/runs/{run}/mark-paid', [\App\Http\Controllers\PayrollController::class, 'markRunPaid'])->name('payroll.runs.mark-paid');
+
+        Route::get('/allowances', [\App\Http\Controllers\PayrollController::class, 'allowances'])->name('payroll.allowances');
+        Route::post('/allowances', [\App\Http\Controllers\PayrollController::class, 'storeAllowance'])->name('payroll.allowances.store');
+        Route::delete('/allowances/{allowance}', [\App\Http\Controllers\PayrollController::class, 'destroyAllowance'])->name('payroll.allowances.destroy');
+
+        Route::get('/deductions', [\App\Http\Controllers\PayrollController::class, 'deductions'])->name('payroll.deductions');
+        Route::post('/deductions', [\App\Http\Controllers\PayrollController::class, 'storeDeduction'])->name('payroll.deductions.store');
+        Route::delete('/deductions/{deduction}', [\App\Http\Controllers\PayrollController::class, 'destroyDeduction'])->name('payroll.deductions.destroy');
+
+        Route::get('/payslips', [\App\Http\Controllers\PayrollController::class, 'payslips'])->name('payroll.payslips');
+
+        Route::get('/reports', [\App\Http\Controllers\PayrollController::class, 'reports'])->name('payroll.reports');
+
+        Route::view('/settings', 'pages.payroll.settings.index')->name('payroll.settings');
+        Route::post('/settings/profile', [AuthController::class, 'updateProfile'])
+            ->name('payroll.profile.update');
+    });
+

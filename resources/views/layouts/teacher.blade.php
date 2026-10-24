@@ -1,4 +1,5 @@
 @include('components.portal.shell', [
+    'theme' => 'default',
     'role' => 'Teacher Portal',
     'homeRoute' => 'teacher.dashboard',
     'profileRoute' => 'teacher.settings',

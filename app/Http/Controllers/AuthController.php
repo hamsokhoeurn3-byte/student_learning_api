@@ -153,6 +153,9 @@ class AuthController extends Controller
             case 'admin':
                 return redirect()->route('admin.dashboard');
 
+            case 'payroll':
+                return redirect()->route('payroll.dashboard');
+
             default:
 
                 Auth::logout();

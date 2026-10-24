@@ -1,7 +1,44 @@
+@php
+    // Panel color themes: pass 'theme' => 'payroll' etc. from the layout
+    $themes = [
+        'default' => [
+            '--accent'          => '#7c3aed',
+            '--accent-dark'     => '#5b21b6',
+            '--accent-soft'     => '#f1ebff',
+            '--sidebar-bg-1'    => '#f5f3ff',
+            '--sidebar-bg-2'    => '#ede9fe',
+            '--sidebar-border'  => '#ddd6fe',
+            '--brand-logo-bg'   => '#f1ebff',
+            '--avatar-color'    => '#6d28d9',
+            '--avatar-bg'       => '#dbeafe',
+            '--account-avatar-bg' => '#ede7ff',
+        ],
+        'payroll' => [
+            '--accent'          => '#0d9488',
+            '--accent-dark'     => '#115e59',
+            '--accent-soft'     => '#ecfdf5',
+            '--sidebar-bg-1'    => '#f0fdfa',
+            '--sidebar-bg-2'    => '#ccfbf1',
+            '--sidebar-border'  => '#99f6e4',
+            '--brand-logo-bg'   => '#ecfdf5',
+            '--avatar-color'    => '#0f766e',
+            '--avatar-bg'       => '#ccfbf1',
+            '--account-avatar-bg' => '#ccfbf1',
+        ],
+    ];
+    $theme = $themes[$theme ?? 'default'] ?? $themes['default'];
+@endphp
 <!doctype html>
 <html lang="en">
 
 <head>
+    <style id="panel-theme-vars">
+        :root {
+            @foreach ($theme as $var => $value)
+            {{ $var }}: {{ $value }};
+            @endforeach
+        }
+    </style>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'SLAS')</title>
@@ -31,8 +68,8 @@
             width: 260px;
             min-width: 260px;
             height: 100vh;
-            background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
-            border-right: 1px solid #ddd6fe;
+            background: linear-gradient(180deg, var(--sidebar-bg-1) 0%, var(--sidebar-bg-2) 100%);
+            border-right: 1px solid var(--sidebar-border);
             padding: 28px 14px 14px;
             display: flex;
             flex-direction: column;
@@ -54,7 +91,7 @@
             object-fit: contain;
             object-position: center;
             border-radius: 12px;
-            background: #f1ebff;
+            background: var(--brand-logo-bg);
         }
 
         .portal-brand small {
@@ -85,14 +122,14 @@
         }
 
         .portal-nav a:hover {
-            color: #6d28d9;
-            background: #f1ebff;
+            color: var(--accent);
+            background: var(--accent-soft);
         }
 
         .portal-nav a.active {
             color: #fff;
-            background: linear-gradient(135deg, #7c3aed, #5b21b6);
-            box-shadow: 0 6px 14px rgba(91, 33, 182, .2);
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            box-shadow: 0 6px 14px color-mix(in srgb, var(--accent-dark) 22%, transparent);
         }
 
         .portal-nav i {
@@ -113,8 +150,8 @@
             display: grid;
             place-items: center;
             border-radius: 50%;
-            color: #6d28d9;
-            background: #dbeafe;
+            color: var(--avatar-color);
+            background: var(--avatar-bg);
             overflow: hidden;
         }
 
@@ -160,8 +197,8 @@
             place-items: center;
             overflow: hidden;
             border-radius: 50%;
-            color: #6d28d9;
-            background: #ede7ff;
+            color: var(--avatar-color);
+            background: var(--account-avatar-bg);
         }
 
         .portal-account-avatar img {
@@ -234,13 +271,13 @@
         }
 
         .portal-sidebar-toggle:hover {
-            color: #6d28d9;
-            background: #f1ebff;
-            border-color: #d8c9ff;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border-color: var(--accent-soft);
         }
 
         .portal-sidebar-toggle:focus-visible {
-            outline: 2px solid #7c3aed;
+            outline: 2px solid var(--accent);
             outline-offset: 2px;
         }
 
@@ -323,9 +360,9 @@
         ===================================================== */
 
         .portal-header {
-            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%) !important;
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%) !important;
             border-bottom: 1px solid rgba(255, 255, 255, 0.15) !important;
-            box-shadow: 0 4px 20px rgba(91, 33, 182, 0.18);
+            box-shadow: 0 4px 20px color-mix(in srgb, var(--accent-dark) 18%, transparent);
             color: #ffffff;
         }
 
@@ -387,6 +424,7 @@
                         $notificationsRoute = match ($currentUser->role ?? '') {
                             'admin' => 'admin.notifications',
                             'teacher' => 'teacher.notifications',
+                            'payroll' => 'payroll.reports',
                             default => 'student.notifications',
                         };
                         $unreadCount = \App\Models\Notification::where('user_id', Auth::id())->where('is_read', false)->count();
